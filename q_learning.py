@@ -26,4 +26,4 @@ q_learner = QLearning(env=env,
                       gamma=parameters["gamma"])
 
 q_learner.train()
-saver.save_to_pickle("models/pendulum_svd.pck", q_learner)
+saver.save_to_pickle("models/pendulum_Q_svd.pck", q_learner.Q)

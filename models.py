@@ -9,7 +9,8 @@ class QLearning:
                  max_steps,
                  epsilon,
                  alpha,
-                 gamma):
+                 gamma,
+                 decay=1.0):
 
         self.env = env
         self.discretizer = discretizer
@@ -18,6 +19,7 @@ class QLearning:
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
+        self.decay = decay
 
         self.Q = np.zeros(self.discretizer.dimensions)
 
@@ -67,6 +69,8 @@ class QLearning:
             state = state_prime
             cumulative_reward += reward
 
+            self.epsilon *= self.decay
+
         return step + 1, cumulative_reward
 
     def run_training_episode(self):
@@ -90,7 +94,7 @@ class QLearning:
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
         else:
-            for _ in range(self.episodes):
+            for episode in range(self.episodes):
                 self.run_training_episode()
 
 

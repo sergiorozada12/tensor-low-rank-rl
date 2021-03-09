@@ -2,12 +2,15 @@ import gym
 import json
 from utils import Discretizer, Saver
 from models import QLearning
+from environments import ContinuousCartPoleEnv
 
-parameters_file = "experiments/pendulum_svd.json"
+#parameters_file = "experiments/pendulum_svd.json"
+parameters_file = "experiments/cartpole_svd.json"
 with open(parameters_file) as j:
     parameters = json.loads(j.read())
 
-env = gym.make('Pendulum-v0')
+#env = gym.make('Pendulum-v0')
+env = ContinuousCartPoleEnv()
 saver = Saver()
 
 discretizer = Discretizer(min_points_states=parameters["min_states"],
@@ -26,4 +29,4 @@ q_learner = QLearning(env=env,
                       gamma=parameters["gamma"])
 
 q_learner.train()
-saver.save_to_pickle("models/pendulum_Q_svd.pck", q_learner.Q)
+saver.save_to_pickle("models/cartpole_Q_svd.pck", q_learner.Q)

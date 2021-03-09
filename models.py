@@ -59,6 +59,7 @@ class QLearning:
         for step in range(self.max_steps):
             action = self.get_greedy_action(state) if is_greedy else self.choose_action(state)
             state_prime, reward, done, _ = self.env.step(action)
+            cumulative_reward += reward
 
             if is_train:
                 self.update_q_matrix(state, action, state_prime, reward)
@@ -67,7 +68,6 @@ class QLearning:
                 break
 
             state = state_prime
-            cumulative_reward += reward
 
             self.epsilon *= self.decay
 
@@ -143,7 +143,7 @@ class LowRankLearning:
         state_prime_idx = self.discretizer.get_state_index(state_prime)
         action_idx = self.discretizer.get_action_index(action)
 
-        target_q = reward + self.gamma * np.max(self.L[state_idx + (slice(None),)].reshape(1, -1) @ self.R)
+        target_q = reward + self.gamma * np.max(self.L[state_prime_idx + (slice(None),)].reshape(1, -1) @ self.R)
         q = np.dot(self.L[state_idx + (slice(None),)], self.R[(slice(None),) + action_idx])
 
         error_signal = target_q - q
@@ -160,6 +160,7 @@ class LowRankLearning:
         for step in range(self.max_steps):
             action = self.get_greedy_action(state) if is_greedy else self.choose_action(state)
             state_prime, reward, done, _ = self.env.step(action)
+            cumulative_reward += reward
 
             if is_train:
                 self.update_q_matrix(state, action, state_prime, reward)
@@ -168,7 +169,6 @@ class LowRankLearning:
                 break
 
             state = state_prime
-            cumulative_reward += reward
 
         return step + 1, cumulative_reward
 

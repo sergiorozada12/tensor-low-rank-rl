@@ -1,0 +1,13 @@
+{
+  "episodes": 500000,
+  "max_steps": 200,
+  "epsilon": 0.2,
+  "alpha": 0.1,
+  "gamma": 0.95,
+  "min_states": [-4.8, -0.5, -0.42, -0.9],
+  "max_states": [4.8, 0.5, 0.42, 0.9]
+  "min_actions": [-1],
+  "max_actions": [1],
+  "bucket_states": [10, 10, 10, 10],
+  "bucket_actions": [20]
+}

@@ -59,7 +59,7 @@ class ContinuousCartPoleEnv(gym.Env):
         sintheta = math.sin(theta)
         temp = (force + self.polemass_length * theta_dot * theta_dot * sintheta) / self.total_mass
         thetaacc = (self.gravity * sintheta - costheta * temp) / \
-            (self.length * (4.0/3.0 - self.masspole * costheta * costheta / self.total_mass))
+                   (self.length * (4.0 / 3.0 - self.masspole * costheta * costheta / self.total_mass))
         xacc = temp - self.polemass_length * thetaacc * costheta / self.total_mass
         x = x + self.tau * x_dot
         x_dot = x_dot + self.tau * xacc
@@ -75,17 +75,19 @@ class ContinuousCartPoleEnv(gym.Env):
         self.state = self.stepPhysics(force)
         x, x_dot, theta, theta_dot = self.state
         done = x < -self.x_threshold \
-            or x > self.x_threshold \
-            or theta < -self.theta_threshold_radians \
-            or theta > self.theta_threshold_radians
+               or x > self.x_threshold \
+               or theta < -self.theta_threshold_radians \
+               or theta > self.theta_threshold_radians
         done = bool(done)
 
+        # reward = 1 - theta**2
+
         if not done:
-            reward = 1.0
+            reward = 1.0 - theta ** 2
         elif self.steps_beyond_done is None:
             # Pole just fell!
             self.steps_beyond_done = 0
-            reward = 1.0
+            reward = 1.0 - theta ** 2
         else:
             if self.steps_beyond_done == 0:
                 logger.warn("""
@@ -94,7 +96,7 @@ done = True. You should always call 'reset()' once you receive 'done = True'
 Any further steps are undefined behavior.
                 """)
             self.steps_beyond_done += 1
-            reward = 0.0
+            reward = 0.0 - theta ** 2
 
         return np.array(self.state), reward, done, {}
 
@@ -108,7 +110,7 @@ Any further steps are undefined behavior.
         screen_height = 400
 
         world_width = self.x_threshold * 2
-        scale = screen_width /world_width
+        scale = screen_width / world_width
         carty = 100  # TOP OF CART
         polewidth = 10.0
         polelen = scale * 1.0
@@ -124,7 +126,7 @@ Any further steps are undefined behavior.
             self.carttrans = rendering.Transform()
             cart.add_attr(self.carttrans)
             self.viewer.add_geom(cart)
-            l, r, t, b = -polewidth / 2, polewidth / 2, polelen-polewidth / 2, -polewidth / 2
+            l, r, t, b = -polewidth / 2, polewidth / 2, polelen - polewidth / 2, -polewidth / 2
             pole = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
             pole.set_color(.8, .6, .4)
             self.poletrans = rendering.Transform(translation=(0, axleoffset))

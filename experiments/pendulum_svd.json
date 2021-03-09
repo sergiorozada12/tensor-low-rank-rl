@@ -8,6 +8,6 @@
   "max_states": [1, 1, 8],
   "min_actions": [-2],
   "max_actions": [2],
-  "spacing_states": [0.1, 0.1, 1],
-  "spacing_actions": [0.1]
+  "bucket_states": [20, 20, 16],
+  "bucket_actions": [40]
 }

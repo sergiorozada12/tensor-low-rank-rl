@@ -12,10 +12,10 @@ saver = Saver()
 
 discretizer = Discretizer(min_points_states=parameters["min_states"],
                           max_points_states=parameters["max_states"],
-                          spacing_states=parameters["spacing_states"],
+                          bucket_states=parameters["bucket_states"],
                           min_points_actions=parameters["min_actions"],
                           max_points_actions=parameters["max_actions"],
-                          spacing_actions=parameters["spacing_actions"])
+                          bucket_actions=parameters["bucket_actions"])
 
 q_learner = QLearning(env=env,
                       discretizer=discretizer,

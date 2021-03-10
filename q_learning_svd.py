@@ -29,7 +29,7 @@ q_learner = QLearning(env=env,
                       epsilon=parameters["epsilon"],
                       alpha=parameters["alpha"],
                       gamma=parameters["gamma"],
-                      decay=decay["decay"])
+                      decay=parameters["decay"])
 
 q_learner.train()
 #saver.save_to_pickle("models/pendulum_Q_svd.pck", q_learner.Q)

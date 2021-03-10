@@ -12,7 +12,7 @@ _, sigma_pendulum, _ = np.linalg.svd(Q_svd_pendulum.reshape(-1, Q_svd_pendulum.s
 _, sigma_cartpole, _ = np.linalg.svd(Q_svd_cartpole.reshape(-1, Q_svd_cartpole.shape[-1]))
 _, sigma_mountaincar, _ = np.linalg.svd(Q_svd_mountaincar.reshape(-1, Q_svd_mountaincar.shape[-1]))
 
-fig, axes = plt.subplots(nrows=1, ncols=2)
+fig, axes = plt.subplots(nrows=1, ncols=3)
 axes[0].bar(np.arange(len(sigma_pendulum)), sigma_pendulum)
 axes[1].bar(np.arange(len(sigma_cartpole)), sigma_cartpole)
 axes[2].bar(np.arange(len(sigma_mountaincar)), sigma_mountaincar)

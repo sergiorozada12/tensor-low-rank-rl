@@ -1,37 +1,25 @@
 import gym
 import json
-from utils import Discretizer, Saver
-from models import QLearning
+from utils import Experiment
 from environments import ContinuousCartPoleEnv, Continuous_MountainCarEnv
 
-#parameters_file = "experiments/pendulum_svd.json"
-#parameters_file = "experiments/cartpole_svd.json"
-parameters_file = "experiments/mountaincar_svd.json"
-with open(parameters_file) as j:
-    parameters = json.loads(j.read())
+parameters_file_pend = "experiments/pendulum_svd.json"
+parameters_file_cart = "experiments/cartpole_svd.json"
+parameters_file_moun = "experiments/mountaincar_svd.json"
 
-#env = gym.make('Pendulum-v0')
-#env = ContinuousCartPoleEnv()
-env = Continuous_MountainCarEnv()
-saver = Saver()
+with open(parameters_file_pend) as j:
+    parameters_pend = json.loads(j.read())
 
-discretizer = Discretizer(min_points_states=parameters["min_states"],
-                          max_points_states=parameters["max_states"],
-                          bucket_states=parameters["bucket_states"],
-                          min_points_actions=parameters["min_actions"],
-                          max_points_actions=parameters["max_actions"],
-                          bucket_actions=parameters["bucket_actions"])
+with open(parameters_file_cart) as j:
+    parameters_cart = json.loads(j.read())
 
-q_learner = QLearning(env=env,
-                      discretizer=discretizer,
-                      episodes=parameters["episodes"],
-                      max_steps=parameters["max_steps"],
-                      epsilon=parameters["epsilon"],
-                      alpha=parameters["alpha"],
-                      gamma=parameters["gamma"],
-                      decay=parameters["decay"])
+with open(parameters_file_moun) as j:
+    parameters_moun = json.loads(j.read())
 
-q_learner.train()
-#saver.save_to_pickle("models/pendulum_Q_svd.pck", q_learner.Q)
-#saver.save_to_pickle("models/cartpole_Q_svd.pck", q_learner.Q)
-saver.save_to_pickle("models/mountaincar_Q_svd.pck", q_learner.Q)
+env_pend = gym.make('Pendulum-v0')
+env_cart = ContinuousCartPoleEnv()
+env_moun = Continuous_MountainCarEnv()
+
+Experiment.run_q_learning_experiment(env_pend, parameters_pend, "models/pendulum_svd.pck")
+Experiment.run_q_learning_experiment(env_cart, parameters_cart, "models/cartpole_svd.pck")
+Experiment.run_q_learning_experiment(env_moun, parameters_moun, "models/mountaincar_svd.pck", True)

@@ -1,7 +1,7 @@
 import gym
 import json
 from utils import Experiment
-from environments import ContinuousCartPoleEnv, Continuous_MountainCarEnv
+from environments import ContinuousCartPoleEnv, Continuous_MountainCarEnv, PendulumEnv
 
 parameters_file_pend_ql_action = "experiments/pendulum_low_rank_q_learner_action.json"
 parameters_file_pend_ql_state = "experiments/pendulum_low_rank_q_learner_state.json"
@@ -11,7 +11,7 @@ with open(parameters_file_pend_ql_action) as j: parameters_pend_ql_action = json
 with open(parameters_file_pend_ql_state) as j: parameters_pend_ql_state = json.loads(j.read())
 with open(parameters_file_pend_lr) as j: parameters_pend_lr = json.loads(j.read())
 
-env_pend = gym.make('Pendulum-v0')
+env_pend = PendulumEnv()
 
-run_q_learning_experiments(env_pend, parameters_file_pend_ql_action, "models/pendulum_ql_action_bucket_{}_exp_{}.pck", False, True)
-run_q_learning_experiments(env_pend, parameters_file_pend_ql_state, "models/pendulum_ql_state_bucket_{}_exp_{}.pck", False, False)
+Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_action, "models/pendulum_ql_action_bucket_{}_exp_{}.pck", False, True)
+Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_state, "models/pendulum_ql_state_bucket_{}_exp_{}.pck", False, False)

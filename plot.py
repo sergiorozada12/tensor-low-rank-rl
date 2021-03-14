@@ -48,4 +48,5 @@ for i in range(6):
     parameters.append(np.prod(model.L.shape) + np.prod(model.R.shape))
     rewards.append(np.mean(model.greedy_cumulative_reward[-100:]))
 plt.plot(parameters, rewards)
+plt.legend(["q_afix", "q_sfix", "lr"])
 plt.show()

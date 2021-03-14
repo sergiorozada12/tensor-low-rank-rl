@@ -91,3 +91,20 @@ class Experiment:
 
         q_learner.train()
         saver.save_to_pickle(path_output, q_learner)
+
+    @staticmethod
+    def run_q_learning_experiments(env, parameters, path_output_base, use_decay=False, varying_action=True):
+        if varying_action:
+            for i in range(len(parameters["bucket_actions"])):
+                parameters_to_experiment = parameters_pend_ql.copy()
+                parameters_to_experiment["bucket_actions"] = parameters["bucket_actions"][i]
+                for j in range(parameters["n_simulations"]):
+                    path_output = path_output_base.format(i, j)
+                    self.run_q_learning_experiment(env, parameters_to_experiment, path_output, use_decay)
+        else:
+            for i in range(len(parameters["bucket_actions"])):
+                parameters_to_experiment = parameters_pend_ql.copy()
+                parameters_to_experiment["bucket_states"] = parameters["bucket_states"][i]
+                for j in range(parameters["n_simulations"]):
+                    path_output = path_output_base.format(i, j)
+                    self.run_q_learning_experiment(env, parameters_to_experiment, path_output, use_decay)

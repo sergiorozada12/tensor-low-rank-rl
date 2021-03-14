@@ -15,3 +15,4 @@ env_pend = PendulumEnv()
 
 Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_action, "models/pendulum_ql_action_bucket_{}_exp_{}.pck", False, True)
 Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_state, "models/pendulum_ql_state_bucket_{}_exp_{}.pck", False, False)
+Experiment.run_lr_learning_experiments(env_pend, parameters_pend_lr, "models/pendulum_lr_k_bucket_{}_exp_{}.pck", False)

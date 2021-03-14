@@ -107,7 +107,8 @@ class LowRankLearning:
                  epsilon,
                  alpha,
                  gamma,
-                 k):
+                 k,
+                 decay=1.0):
 
         self.env = env
         self.discretizer = discretizer
@@ -116,9 +117,10 @@ class LowRankLearning:
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
+        self.decay = decay
 
-        self.L = np.random.rand(self.discretizer.n_states + [k]) * 1e-3
-        self.R = np.random.rand([k] + self.discretizer.n_actions) * 1e-3
+        self.L = np.random.rand(*(list(self.discretizer.n_states) + [k]))* 1e-3
+        self.R = np.random.rand(*([k] + list(self.discretizer.n_actions))) * 1e-3
 
         self.training_steps = []
         self.training_cumulative_reward = []
@@ -169,6 +171,8 @@ class LowRankLearning:
                 break
 
             state = state_prime
+
+            self.epsilon *= self.decay
 
         return step + 1, cumulative_reward
 

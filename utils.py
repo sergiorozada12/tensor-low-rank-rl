@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-from models import QLearning
+from models import QLearning, LowRankLearning
 
 
 class Discretizer:
@@ -69,7 +69,6 @@ class Experiment:
 
     @staticmethod
     def run_q_learning_experiment(env, parameters, path_output, use_decay=False):
-
         saver = Saver()
         discretizer = Discretizer(min_points_states=parameters["min_states"],
                                   max_points_states=parameters["max_states"],
@@ -89,8 +88,33 @@ class Experiment:
                               gamma=parameters["gamma"],
                               decay=decay)
 
-        q_learner.train()
+        q_learner.train(run_greedy_frequency=10)
         saver.save_to_pickle(path_output, q_learner)
+
+    @staticmethod
+    def run_lr_learning_experiment(env, parameters, path_output, use_decay=False):
+        saver = Saver()
+        discretizer = Discretizer(min_points_states=parameters["min_states"],
+                                  max_points_states=parameters["max_states"],
+                                  bucket_states=parameters["bucket_states"],
+                                  min_points_actions=parameters["min_actions"],
+                                  max_points_actions=parameters["max_actions"],
+                                  bucket_actions=parameters["bucket_actions"])
+
+        decay = parameters["decay"] if use_decay else 1.0
+
+        lr_learner = LowRankLearning(env=env,
+                                     discretizer=discretizer,
+                                     episodes=parameters["episodes"],
+                                     max_steps=parameters["max_steps"],
+                                     epsilon=parameters["epsilon"],
+                                     alpha=parameters["alpha"],
+                                     gamma=parameters["gamma"],
+                                     k=parameters["k"],
+                                     decay=decay)
+
+        lr_learner.train(run_greedy_frequency=10)
+        saver.save_to_pickle(path_output, lr_learner)
 
     @staticmethod
     def run_q_learning_experiments(env, parameters, path_output_base, use_decay=False, varying_action=True):
@@ -102,9 +126,18 @@ class Experiment:
                     path_output = path_output_base.format(i, j)
                     Experiment.run_q_learning_experiment(env, parameters_to_experiment, path_output, use_decay)
         else:
-            for i in range(len(parameters["bucket_actions"])):
+            for i in range(len(parameters["bucket_states"])):
                 parameters_to_experiment = parameters.copy()
                 parameters_to_experiment["bucket_states"] = parameters["bucket_states"][i]
                 for j in range(parameters["n_simulations"]):
                     path_output = path_output_base.format(i, j)
                     Experiment.run_q_learning_experiment(env, parameters_to_experiment, path_output, use_decay)
+
+    @staticmethod
+    def run_lr_learning_experiments(env, parameters, path_output_base, use_decay=False):
+        for i in range(len(parameters["k"])):
+            parameters_to_experiment = parameters.copy()
+            parameters_to_experiment["k"] = parameters["k"][i]
+            for j in range(parameters["n_simulations"]):
+                path_output = path_output_base.format(i, j)
+                Experiment.run_lr_learning_experiment(env, parameters_to_experiment, path_output, use_decay)

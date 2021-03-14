@@ -193,5 +193,5 @@ class LowRankLearning:
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
         else:
-            for episode in range(self.episodes):
+            for _ in range(self.episodes):
                 self.run_training_episode()

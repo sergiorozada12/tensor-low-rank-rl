@@ -23,10 +23,8 @@ class Discretizer:
         self.spacing_actions = (self.max_points_actions - self.min_points_actions) / self.bucket_actions
         self.range_actions = self.max_points_actions - self.min_points_actions
 
-        self.n_states = np.round((self.max_points_states - self.min_points_states) / self.spacing_states + 1).astype(
-            int)
-        self.n_actions = np.round(
-            (self.max_points_actions - self.min_points_actions) / self.spacing_actions + 1).astype(int)
+        self.n_states = np.round(self.bucket_states).astype(int)
+        self.n_actions = np.round(self.bucket_actions).astype(int)
         self.dimensions = np.concatenate((self.n_states, self.n_actions))
 
     def get_state_index(self, state):

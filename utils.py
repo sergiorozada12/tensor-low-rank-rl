@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import json
 from models import QLearning, LowRankLearning
 
 
@@ -157,6 +158,37 @@ class Plotter:
             _, sigma, _ = np.linalg.svd(matrix.reshape(-1, matrix.shape[-1]))
 
             axes[i].bar(np.arange(len(sigma)), sigma)
+        plt.show()
+
+    @staticmethod
+    def plot_rewards(base_paths, experiment_paths):
+
+        saver = Saver()
+        plt.figure()
+
+        for i in range(len(base_paths)):
+
+            path_base = base_paths[i]
+            with open(experiment_paths[i]) as j: params = json.loads(j.read())
+
+            n_simulations = params["n_simulations"]
+            if "lr" in path_base:
+                n_experiments = len(params["k"])
+            else:
+                n_experiments = max(len(params["bucket_actions"]), len(params["bucket_states"]))
+
+            parameters = np.zeros((n_simulations, n_experiments))
+            rewards = np.zeros((n_simulations, n_experiments))
+
+            for j in range(n_experiments):
+                for k in range(n_simulations):
+                    model = saver.load_from_pickle(path_base.format(j, k))
+                    if "lr" in path_base:
+                        parameters[k, j] = np.prod(model.L.shape) + np.prod(model.R.shape)
+                    else:
+                        parameters[k, j] = np.prod(model.Q.shape)
+                    rewards[k, j] = np.mean(model.greedy_cumulative_reward[-100:])
+            plt.plot(np.mean(parameters, axis=0), np.mean(rewards, axis=0))
         plt.show()
 
 

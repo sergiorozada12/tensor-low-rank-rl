@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import pickle
 from models import QLearning, LowRankLearning
 
@@ -141,3 +142,21 @@ class Experiment:
             for j in range(parameters["n_simulations"]):
                 path_output = path_output_base.format(i, j)
                 Experiment.run_lr_learning_experiment(env, parameters_to_experiment, path_output, use_decay)
+
+
+class Plotter:
+
+    @staticmethod
+    def plot_svd(paths):
+
+        saver = Saver()
+
+        fig, axes = plt.subplots(nrows=1, ncols=len(paths))
+        for i, path in enumerate(paths):
+            matrix = saver.load_from_pickle(path)
+            _, sigma, _ = np.linalg.svd(matrix.reshape(-1, matrix.shape[-1]))
+
+            axes[i].bar(np.arange(len(sigma)), sigma)
+        plt.show()
+
+

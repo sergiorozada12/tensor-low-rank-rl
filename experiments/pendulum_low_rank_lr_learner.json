@@ -1,6 +1,7 @@
 {
   "episodes": 5000,
-  "max_steps": 200,
+  "max_steps": 100,
+  "decay": 0.99999,
   "epsilon": 0.2,
   "alpha": 0.01,
   "gamma": 0.9,

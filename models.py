@@ -119,8 +119,8 @@ class LowRankLearning:
         self.gamma = gamma
         self.decay = decay
 
-        self.L = np.random.rand(*(list(self.discretizer.n_states) + [k]))* 1e-3
-        self.R = np.random.rand(*([k] + list(self.discretizer.n_actions))) * 1e-3
+        self.L = np.random.rand(*(list(self.discretizer.n_states) + [k]))
+        self.R = np.random.rand(*([k] + list(self.discretizer.n_actions)))
 
         self.training_steps = []
         self.training_cumulative_reward = []

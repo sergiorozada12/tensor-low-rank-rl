@@ -188,7 +188,7 @@ class Plotter:
                     else:
                         parameters[k, j] = np.prod(model.Q.shape)
                     rewards[k, j] = np.mean(model.greedy_cumulative_reward[-100:])
-            plt.plot(np.mean(parameters, axis=0), np.mean(rewards, axis=0))
+            plt.plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
         plt.show()
 
 

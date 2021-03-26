@@ -131,6 +131,7 @@ class Experiment:
                                   bucket_actions=parameters["bucket_actions"])
 
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
+        min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 1.0
 
         q_learner = QLearning(env=env,
                               discretizer=discretizer,
@@ -139,7 +140,8 @@ class Experiment:
                               epsilon=parameters["epsilon"],
                               alpha=parameters["alpha"],
                               gamma=parameters["gamma"],
-                              decay=decay)
+                              decay=decay,
+                              min_epsilon=min_epsilon)
 
         q_learner.train(run_greedy_frequency=10)
         saver.save_to_pickle(path_output, q_learner)
@@ -156,6 +158,7 @@ class Experiment:
 
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
         init_ord = parameters["init_ord"] if "init_ord" in parameters.keys() else 1.0
+        min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 1.0
 
         lr_learner = LowRankLearning(env=env,
                                      discretizer=discretizer,
@@ -166,7 +169,8 @@ class Experiment:
                                      gamma=parameters["gamma"],
                                      k=parameters["k"],
                                      decay=decay,
-                                     init_ord=init_ord)
+                                     init_ord=init_ord,
+                                     min_epsilon=min_epsilon)
 
         lr_learner.train(run_greedy_frequency=10)
         saver.save_to_pickle(path_output, lr_learner)
@@ -243,7 +247,7 @@ class Plotter:
                         parameters[k, j] = np.prod(model.L.shape) + np.prod(model.R.shape)
                     else:
                         parameters[k, j] = np.prod(model.Q.shape)
-                    rewards[k, j] = np.mean(model.greedy_cumulative_reward[-100:])
+                    rewards[k, j] = np.median(model.greedy_cumulative_reward[-100:])
             plt.plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
         plt.show()
 

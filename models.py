@@ -10,7 +10,8 @@ class QLearning:
                  epsilon,
                  alpha,
                  gamma,
-                 decay=1.0):
+                 decay=1.0,
+                 min_epsilon=0.0):
 
         self.env = env
         self.discretizer = discretizer
@@ -20,6 +21,7 @@ class QLearning:
         self.alpha = alpha
         self.gamma = gamma
         self.decay = decay
+        self.min_epsilon = min_epsilon
 
         self.Q = np.zeros(self.discretizer.dimensions)
 
@@ -69,7 +71,7 @@ class QLearning:
 
             state = state_prime
 
-            if (not is_greedy) & is_train:
+            if (not is_greedy) & is_train & (self.epsilon > self.min_epsilon):
                 self.epsilon *= self.decay
 
         return step + 1, cumulative_reward
@@ -95,7 +97,7 @@ class QLearning:
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
         else:
-            for episode in range(self.episodes):
+            for _ in range(self.episodes):
                 self.run_training_episode()
 
 
@@ -110,7 +112,8 @@ class LowRankLearning:
                  gamma,
                  k,
                  decay=1.0,
-                 init_ord=1):
+                 init_ord=1,
+                 min_epsilon=0.0):
 
         self.env = env
         self.discretizer = discretizer
@@ -120,6 +123,7 @@ class LowRankLearning:
         self.alpha = alpha
         self.gamma = gamma
         self.decay = decay
+        self.min_epsilon = min_epsilon
 
         self.L = np.random.rand(*(list(self.discretizer.n_states) + [k]))*init_ord
         self.R = np.random.rand(*([k] + list(self.discretizer.n_actions)))*init_ord

@@ -11,6 +11,7 @@ parameters_file_cart_ql_action = "experiments/cartpole_low_rank_q_learner_action
 parameters_file_cart_lr = "experiments/cartpole_low_rank_lr_learner.json"
 
 parameters_file_mountaincar_ql_action = "experiments/mountaincar_low_rank_q_learner_action.json"
+parameters_file_mountaincar_lr = "experiments/mountaincar_low_rank_lr_learner.json"
 
 with open(parameters_file_pend_ql_action) as j: parameters_pend_ql_action = json.loads(j.read())
 with open(parameters_file_pend_ql_state) as j: parameters_pend_ql_state = json.loads(j.read())
@@ -20,6 +21,7 @@ with open(parameters_file_cart_ql_action) as j: parameters_cart_ql_action = json
 with open(parameters_file_cart_lr) as j: parameters_cart_lr = json.loads(j.read())
 
 with open(parameters_file_mountaincar_ql_action) as j: parameters_mountaincar_ql_action = json.loads(j.read())
+with open(parameters_file_mountaincar_lr) as j: parameters_mountaincar_lr = json.loads(j.read())
 
 env_pend = PendulumEnv()
 env_cart = ContinuousCartPoleEnv()
@@ -33,4 +35,5 @@ env_mountaincar = Continuous_MountainCarEnv()
 #Experiment.run_lr_learning_experiments(env_cart, parameters_cart_lr, "models/cartpole_lr_k_bucket_{}_exp_{}.pck")
 
 Experiment.run_q_learning_experiments(env_mountaincar, parameters_mountaincar_ql_action, "models/mountaincar_ql_action_bucket_{}_exp_{}.pck")
+Experiment.run_lr_learning_experiments(env_mountaincar, parameters_mountaincar_lr, "models/mountaincar_lr_k_bucket_{}_exp_{}.pck")
 

@@ -166,7 +166,7 @@ class Continuous_MountainCarEnv(gym.Env):
         self.min_position = -1.2
         self.max_position = 0.6
         self.max_speed = 0.07
-        self.goal_position = 0.45 # was 0.5 in gym, 0.45 in Arnaud de Broissia's version
+        self.goal_position = 0.45  # was 0.5 in gym, 0.45 in Arnaud de Broissia's version
         self.goal_velocity = goal_velocity
         self.power = 0.0015
 
@@ -220,7 +220,11 @@ class Continuous_MountainCarEnv(gym.Env):
         reward = 0
         if done:
             reward = 100.0
-        #reward -= math.pow(action[0], 2) * 0.1
+        # reward += self._height(position) * 0.1
+        reward -= np.exp(self.goal_position - position)
+        # reward -= math.pow(action[0], 2) * 1.0
+
+        reward -= np.abs(action[0]) * 1.0
 
         self.state = np.array([position, velocity])
         return self.state, reward, done, {}
@@ -230,14 +234,14 @@ class Continuous_MountainCarEnv(gym.Env):
         return np.array(self.state)
 
     def _height(self, xs):
-        return np.sin(3 * xs)*.45+.55
+        return np.sin(3 * xs) * .45 + .55
 
     def render(self, mode='human'):
         screen_width = 600
         screen_height = 400
 
         world_width = self.max_position - self.min_position
-        scale = screen_width/world_width
+        scale = screen_width / world_width
         carwidth = 40
         carheight = 20
 
@@ -246,7 +250,7 @@ class Continuous_MountainCarEnv(gym.Env):
             self.viewer = rendering.Viewer(screen_width, screen_height)
             xs = np.linspace(self.min_position, self.max_position, 100)
             ys = self._height(xs)
-            xys = list(zip((xs-self.min_position)*scale, ys*scale))
+            xys = list(zip((xs - self.min_position) * scale, ys * scale))
 
             self.track = rendering.make_polyline(xys)
             self.track.set_linewidth(4)
@@ -274,8 +278,8 @@ class Continuous_MountainCarEnv(gym.Env):
             backwheel.add_attr(self.cartrans)
             backwheel.set_color(.5, .5, .5)
             self.viewer.add_geom(backwheel)
-            flagx = (self.goal_position-self.min_position)*scale
-            flagy1 = self._height(self.goal_position)*scale
+            flagx = (self.goal_position - self.min_position) * scale
+            flagy1 = self._height(self.goal_position) * scale
             flagy2 = flagy1 + 50
             flagpole = rendering.Line((flagx, flagy1), (flagx, flagy2))
             self.viewer.add_geom(flagpole)
@@ -287,7 +291,7 @@ class Continuous_MountainCarEnv(gym.Env):
 
         pos = self.state[0]
         self.cartrans.set_translation(
-            (pos-self.min_position) * scale, self._height(pos) * scale
+            (pos - self.min_position) * scale, self._height(pos) * scale
         )
         self.cartrans.set_rotation(math.cos(3 * pos))
 

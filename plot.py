@@ -25,3 +25,11 @@ experiment_paths = ["experiments/cartpole_low_rank_q_learner_action.json",
                     "experiments/cartpole_low_rank_lr_learner.json"]
 
 Plotter.plot_rewards(base_paths, experiment_paths)
+
+#############################################################################
+
+base_paths = ["models/mountaincar_ql_action_bucket_{}_exp_{}.pck"]
+
+experiment_paths = ["experiments/mountaincar_low_rank_q_learner_action.json"]
+
+Plotter.plot_rewards(base_paths, experiment_paths)

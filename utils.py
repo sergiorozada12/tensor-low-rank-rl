@@ -121,7 +121,7 @@ class Saver:
 class Experiment:
 
     @staticmethod
-    def run_q_learning_experiment(env, parameters, path_output, use_decay=False):
+    def run_q_learning_experiment(env, parameters, path_output):
         saver = Saver()
         discretizer = Discretizer(min_points_states=parameters["min_states"],
                                   max_points_states=parameters["max_states"],
@@ -130,7 +130,7 @@ class Experiment:
                                   max_points_actions=parameters["max_actions"],
                                   bucket_actions=parameters["bucket_actions"])
 
-        decay = parameters["decay"] if use_decay else 1.0
+        decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
 
         q_learner = QLearning(env=env,
                               discretizer=discretizer,
@@ -145,7 +145,7 @@ class Experiment:
         saver.save_to_pickle(path_output, q_learner)
 
     @staticmethod
-    def run_lr_learning_experiment(env, parameters, path_output, use_decay=False):
+    def run_lr_learning_experiment(env, parameters, path_output):
         saver = Saver()
         discretizer = Discretizer(min_points_states=parameters["min_states"],
                                   max_points_states=parameters["max_states"],
@@ -154,7 +154,8 @@ class Experiment:
                                   max_points_actions=parameters["max_actions"],
                                   bucket_actions=parameters["bucket_actions"])
 
-        decay = parameters["decay"] if use_decay else 1.0
+        decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
+        init_ord = parameters["init_ord"] if "init_ord" in parameters.keys() else 1.0
 
         lr_learner = LowRankLearning(env=env,
                                      discretizer=discretizer,
@@ -164,36 +165,40 @@ class Experiment:
                                      alpha=parameters["alpha"],
                                      gamma=parameters["gamma"],
                                      k=parameters["k"],
-                                     decay=decay)
+                                     decay=decay,
+                                     init_ord=init_ord)
 
         lr_learner.train(run_greedy_frequency=10)
         saver.save_to_pickle(path_output, lr_learner)
 
     @staticmethod
-    def run_q_learning_experiments(env, parameters, path_output_base, use_decay=False, varying_action=True):
+    def run_q_learning_experiments(env, parameters, path_output_base):
+
+        varying_action = True if len(parameters["bucket_actions"]) > 1 else False
+
         if varying_action:
             for i in range(len(parameters["bucket_actions"])):
                 parameters_to_experiment = parameters.copy()
                 parameters_to_experiment["bucket_actions"] = parameters["bucket_actions"][i]
                 for j in range(parameters["n_simulations"]):
                     path_output = path_output_base.format(i, j)
-                    Experiment.run_q_learning_experiment(env, parameters_to_experiment, path_output, use_decay)
+                    Experiment.run_q_learning_experiment(env, parameters_to_experiment, path_output)
         else:
             for i in range(len(parameters["bucket_states"])):
                 parameters_to_experiment = parameters.copy()
                 parameters_to_experiment["bucket_states"] = parameters["bucket_states"][i]
                 for j in range(parameters["n_simulations"]):
                     path_output = path_output_base.format(i, j)
-                    Experiment.run_q_learning_experiment(env, parameters_to_experiment, path_output, use_decay)
+                    Experiment.run_q_learning_experiment(env, parameters_to_experiment, path_output)
 
     @staticmethod
-    def run_lr_learning_experiments(env, parameters, path_output_base, use_decay=False):
+    def run_lr_learning_experiments(env, parameters, path_output_base):
         for i in range(len(parameters["k"])):
             parameters_to_experiment = parameters.copy()
             parameters_to_experiment["k"] = parameters["k"][i]
             for j in range(parameters["n_simulations"]):
                 path_output = path_output_base.format(i, j)
-                Experiment.run_lr_learning_experiment(env, parameters_to_experiment, path_output, use_decay)
+                Experiment.run_lr_learning_experiment(env, parameters_to_experiment, path_output)
 
 
 class Plotter:

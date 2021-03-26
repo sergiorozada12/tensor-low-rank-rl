@@ -69,7 +69,8 @@ class QLearning:
 
             state = state_prime
 
-            self.epsilon *= self.decay
+            if (not is_greedy) & is_train:
+                self.epsilon *= self.decay
 
         return step + 1, cumulative_reward
 
@@ -173,7 +174,8 @@ class LowRankLearning:
 
             state = state_prime
 
-            self.epsilon *= self.decay
+            if (not is_greedy) & is_train & (self.epsilon > self.min_epsilon):
+                self.epsilon *= self.decay
 
         return step + 1, cumulative_reward
 

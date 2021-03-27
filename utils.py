@@ -221,34 +221,35 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def plot_rewards(base_paths, experiment_paths):
-
+    def plot_rewards(base_paths_arr, experiment_paths_arr):
         saver = Saver()
-        plt.figure()
+        fig, axes = plt.subplots(nrows=1, ncols=len(base_paths_arr))
+        for index in range(len(base_paths_arr)):
+            base_paths = base_paths_arr[index]
+            experiment_paths = experiment_paths_arr[index]
 
-        for i in range(len(base_paths)):
+            for i in range(len(base_paths)):
+                path_base = base_paths[i]
+                with open(experiment_paths[i]) as j: params = json.loads(j.read())
 
-            path_base = base_paths[i]
-            with open(experiment_paths[i]) as j: params = json.loads(j.read())
+                n_simulations = params["n_simulations"]
+                if "lr" in path_base:
+                    n_experiments = len(params["k"])
+                else:
+                    n_experiments = max(len(params["bucket_actions"]), len(params["bucket_states"]))
 
-            n_simulations = params["n_simulations"]
-            if "lr" in path_base:
-                n_experiments = len(params["k"])
-            else:
-                n_experiments = max(len(params["bucket_actions"]), len(params["bucket_states"]))
+                parameters = np.zeros((n_simulations, n_experiments))
+                rewards = np.zeros((n_simulations, n_experiments))
 
-            parameters = np.zeros((n_simulations, n_experiments))
-            rewards = np.zeros((n_simulations, n_experiments))
-
-            for j in range(n_experiments):
-                for k in range(n_simulations):
-                    model = saver.load_from_pickle(path_base.format(j, k))
-                    if "lr" in path_base:
-                        parameters[k, j] = np.prod(model.L.shape) + np.prod(model.R.shape)
-                    else:
-                        parameters[k, j] = np.prod(model.Q.shape)
-                    rewards[k, j] = np.median(model.greedy_cumulative_reward[-100:])
-            plt.plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
+                for j in range(n_experiments):
+                    for k in range(n_simulations):
+                        model = saver.load_from_pickle(path_base.format(j, k))
+                        if "lr" in path_base:
+                            parameters[k, j] = np.prod(model.L.shape) + np.prod(model.R.shape)
+                        else:
+                            parameters[k, j] = np.prod(model.Q.shape)
+                        rewards[k, j] = np.median(model.greedy_cumulative_reward[-100:])
+                axes[index].plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
         plt.show()
 
 

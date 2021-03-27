@@ -34,6 +34,6 @@ env_mountaincar = Continuous_MountainCarEnv()
 #Experiment.run_q_learning_experiments(env_cart, parameters_cart_ql_action, "models/cartpole_ql_action_bucket_{}_exp_{}.pck")
 #Experiment.run_lr_learning_experiments(env_cart, parameters_cart_lr, "models/cartpole_lr_k_bucket_{}_exp_{}.pck")
 
-Experiment.run_q_learning_experiments(env_mountaincar, parameters_mountaincar_ql_action, "models/mountaincar_ql_action_bucket_{}_exp_{}.pck")
+#Experiment.run_q_learning_experiments(env_mountaincar, parameters_mountaincar_ql_action, "models/mountaincar_ql_action_bucket_{}_exp_{}.pck")
 Experiment.run_lr_learning_experiments(env_mountaincar, parameters_mountaincar_lr, "models/mountaincar_lr_k_bucket_{}_exp_{}.pck")
 

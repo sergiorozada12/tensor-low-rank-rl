@@ -1,5 +1,5 @@
 {
-  "episodes": 100000,
+  "episodes": 40000,
   "max_steps": 100,
   "epsilon": 0.4,
   "alpha": 0.01,

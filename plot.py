@@ -3,9 +3,9 @@ from utils import Saver, Plotter
 saver = Saver()
 
 # PLOT 1
-Plotter.plot_svd(["models/pendulum_Q_svd.pck",
-                  "models/cartpole_Q_svd.pck",
-                  "models/mountaincar_Q_svd.pck"])
+Plotter.plot_svd(["models/pendulum_ql_action_bucket_5_exp_0.pck",
+                  "models/cartpole_ql_action_bucket_4_exp_0.pck",
+                  "models/mountaincar_ql_action_bucket_4_exp_0.pck"])
 
 # PLOT 2
 base_paths_pend = ["models/pendulum_ql_action_bucket_{}_exp_{}.pck", "models/pendulum_lr_k_bucket_{}_exp_{}.pck"]

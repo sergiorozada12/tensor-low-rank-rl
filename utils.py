@@ -214,7 +214,7 @@ class Plotter:
 
         fig, axes = plt.subplots(nrows=1, ncols=len(paths))
         for i, path in enumerate(paths):
-            matrix = saver.load_from_pickle(path)
+            matrix = saver.load_from_pickle(path).Q
             _, sigma, _ = np.linalg.svd(matrix.reshape(-1, matrix.shape[-1]))
 
             axes[i].bar(np.arange(len(sigma)), sigma)

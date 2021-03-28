@@ -10,9 +10,9 @@
   "min_actions": [-1],
   "max_actions": [1],
   "bucket_states": [10, 20],
-  "bucket_actions": [20],
+  "bucket_actions": [25],
   "n_simulations": 10,
   "init_ord": 0.1,
-  "min_epsilon": 0.1,
-  "k": [4, 8, 12, 16, 20]
+  "min_epsilon": 0.075,
+  "k": [5, 10, 15, 20, 25]
 }

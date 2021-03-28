@@ -4,7 +4,6 @@ from utils import Experiment
 from environments import ContinuousCartPoleEnv, Continuous_MountainCarEnv, PendulumEnv
 
 parameters_file_pend_ql_action = "experiments/pendulum_low_rank_q_learner_action.json"
-parameters_file_pend_ql_state = "experiments/pendulum_low_rank_q_learner_state.json"
 parameters_file_pend_lr = "experiments/pendulum_low_rank_lr_learner.json"
 
 parameters_file_cart_ql_action = "experiments/cartpole_low_rank_q_learner_action.json"
@@ -14,7 +13,6 @@ parameters_file_mountaincar_ql_action = "experiments/mountaincar_low_rank_q_lear
 parameters_file_mountaincar_lr = "experiments/mountaincar_low_rank_lr_learner.json"
 
 with open(parameters_file_pend_ql_action) as j: parameters_pend_ql_action = json.loads(j.read())
-with open(parameters_file_pend_ql_state) as j: parameters_pend_ql_state = json.loads(j.read())
 with open(parameters_file_pend_lr) as j: parameters_pend_lr = json.loads(j.read())
 
 with open(parameters_file_cart_ql_action) as j: parameters_cart_ql_action = json.loads(j.read())

@@ -193,7 +193,6 @@ class Experiment:
                     Experiment.run_q_learning_experiment(env,
                                                          parameters_to_experiment,
                                                          path_output,
-                                                         path_ground_truth,
                                                          Q_gt)
         else:
             for i in range(len(parameters["bucket_states"])):

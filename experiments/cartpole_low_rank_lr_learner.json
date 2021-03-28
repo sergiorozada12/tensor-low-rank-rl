@@ -12,5 +12,6 @@
   "bucket_states": [10, 10, 20, 20],
   "bucket_actions": [10],
   "k": [2, 4, 6, 8, 10],
-  "n_simulations": 1
+  "n_simulations": 1,
+  "init_ord": 0.1
 }

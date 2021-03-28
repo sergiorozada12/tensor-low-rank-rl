@@ -27,13 +27,22 @@ env_pend = PendulumEnv()
 env_cart = ContinuousCartPoleEnv()
 env_mountaincar = Continuous_MountainCarEnv()
 
-#Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_action, "models/pendulum_ql_action_bucket_{}_exp_{}.pck")
-#Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_state, "models/pendulum_ql_state_bucket_{}_exp_{}.pck")
-#Experiment.run_lr_learning_experiments(env_pend, parameters_pend_lr, "models/pendulum_lr_k_bucket_{}_exp_{}.pck", True)
+# 1) REWARD
+#Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_action, "models/pendulum_reward_ql_action_bucket_{}_exp_{}.pck")
+#Experiment.run_lr_learning_experiments(env_pend, parameters_pend_lr, "models/pendulum_reward_lr_k_bucket_{}_exp_{}.pck")
 
-#Experiment.run_q_learning_experiments(env_cart, parameters_cart_ql_action, "models/cartpole_ql_action_bucket_{}_exp_{}.pck")
-#Experiment.run_lr_learning_experiments(env_cart, parameters_cart_lr, "models/cartpole_lr_k_bucket_{}_exp_{}.pck")
+#Experiment.run_q_learning_experiments(env_cart, parameters_cart_ql_action, "models/cartpole_reward_ql_action_bucket_{}_exp_{}.pck")
+#Experiment.run_lr_learning_experiments(env_cart, parameters_cart_lr, "models/cartpole_reward_lr_k_bucket_{}_exp_{}.pck")
 
-#Experiment.run_q_learning_experiments(env_mountaincar, parameters_mountaincar_ql_action, "models/mountaincar_ql_action_bucket_{}_exp_{}.pck")
-Experiment.run_lr_learning_experiments(env_mountaincar, parameters_mountaincar_lr, "models/mountaincar_lr_k_bucket_{}_exp_{}.pck")
+#Experiment.run_q_learning_experiments(env_mountaincar, parameters_mountaincar_ql_action, "models/mountaincar_reward_ql_action_bucket_{}_exp_{}.pck")
+Experiment.run_lr_learning_experiments(env_mountaincar, parameters_mountaincar_lr, "models/mountaincar_reward_lr_k_bucket_{}_exp_{}.pck")
 
+# 2) CONVERGENCE
+#Experiment.run_q_learning_experiments(env_pend, parameters_pend_ql_action, "models/pendulum_conv_ql_action_bucket_{}_exp_{}.pck", "models/pendulum_reward_ql_action_bucket_{}_exp_{}.pck")
+#Experiment.run_lr_learning_experiments(env_pend, parameters_pend_lr, "models/pendulum_conv_lr_k_bucket_{}_exp_{}.pck", "models/pendulum_reward_lr_k_bucket_{}_exp_{}.pck")
+
+#Experiment.run_q_learning_experiments(env_cart, parameters_cart_ql_action, "models/cartpole_conv_ql_action_bucket_{}_exp_{}.pck", "models/cartpole_reward_ql_action_bucket_{}_exp_{}.pck")
+#Experiment.run_lr_learning_experiments(env_cart, parameters_cart_lr, "models/cartpole_conv_lr_k_bucket_{}_exp_{}.pck", "models/pendulum_reward_lr_k_bucket_{}_exp_{}.pck")
+
+#Experiment.run_q_learning_experiments(env_mountaincar, parameters_mountaincar_ql_action, "models/mountaincar_conv_ql_action_bucket_{}_exp_{}.pck", "models/mountaincar_reward_ql_action_bucket_{}_exp_{}.pck")
+#Experiment.run_lr_learning_experiments(env_mountaincar, parameters_mountaincar_lr, "models/mountaincar_conv_lr_k_bucket_{}_exp_{}.pck", "models/mountaincar_reward_lr_k_bucket_{}_exp_{}.pck")

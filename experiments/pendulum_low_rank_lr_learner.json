@@ -1,8 +1,8 @@
 {
-  "episodes": 5000,
+  "episodes": 7500,
   "max_steps": 100,
   "decay": 0.99999,
-  "epsilon": 0.2,
+  "epsilon": 0.6,
   "alpha": 0.01,
   "gamma": 0.9,
   "min_states": [-1, -5],
@@ -12,5 +12,6 @@
   "bucket_states": [20, 20],
   "bucket_actions": [10],
   "n_simulations": 10,
-  "k": [1, 2, 4, 6, 8, 10]
+  "k": [1, 2, 4, 6, 8, 10],
+  "init_ord": 0.1
 }

@@ -11,7 +11,8 @@ class QLearning:
                  alpha,
                  gamma,
                  decay=1.0,
-                 min_epsilon=0.0):
+                 min_epsilon=0.0,
+                 Q_ground_truth=None):
 
         self.env = env
         self.discretizer = discretizer
@@ -24,11 +25,22 @@ class QLearning:
         self.min_epsilon = min_epsilon
 
         self.Q = np.zeros(self.discretizer.dimensions)
+        self.Q_gt = Q_ground_truth
+
+        if self.Q_gt is not None:
+            self.Q_gt_norm = np.linalg.norm(Q_ground_truth.flatten(), ord=2)
+            self.Q_norms = []
+
+            self.estimate_deviation()
 
         self.training_steps = []
         self.training_cumulative_reward = []
         self.greedy_steps = []
         self.greedy_cumulative_reward = []
+
+    def estimate_deviation(self):
+        norm = np.linalg.norm(self.Q_gt.flatten() - self.Q.flatten(), ord=2)/self.Q_gt_norm
+        self.Q_norms.append(norm)
 
     def get_random_action(self):
         return self.env.action_space.sample()
@@ -53,6 +65,9 @@ class QLearning:
 
         error_signal = target_q - q
         self.Q[state_idx + action_idx] += self.alpha * error_signal
+
+        if self.Q_gt is not None:
+            self.estimate_deviation()
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()
@@ -113,7 +128,8 @@ class LowRankLearning:
                  k,
                  decay=1.0,
                  init_ord=1,
-                 min_epsilon=0.0):
+                 min_epsilon=0.0,
+                 Q_hat_ground_truth=None):
 
         self.env = env
         self.discretizer = discretizer
@@ -128,10 +144,23 @@ class LowRankLearning:
         self.L = np.random.rand(*(list(self.discretizer.n_states) + [k]))*init_ord
         self.R = np.random.rand(*([k] + list(self.discretizer.n_actions)))*init_ord
 
+        self.Q_hat_gt = Q_hat_ground_truth
+
+        if self.Q_hat_gt is not None:
+            self.Q_hat_gt_norm = np.linalg.norm(Q_hat_ground_truth.flatten(), ord=2)
+            self.Q_hat_norms = []
+
+            self.estimate_deviation()
+
         self.training_steps = []
         self.training_cumulative_reward = []
         self.greedy_steps = []
         self.greedy_cumulative_reward = []
+
+    def estimate_deviation(self):
+        self.Q_hat = self.L @ self.R
+        norm = np.linalg.norm(self.Q_hat_gt.flatten() - self.Q_hat.flatten(), ord=2)/self.Q_hat_gt_norm
+        self.Q_hat_norms.append(norm)
 
     def get_random_action(self):
         return self.env.action_space.sample()
@@ -160,6 +189,9 @@ class LowRankLearning:
 
         self.L[state_idx + (slice(None),)] += self.alpha * error_signal * grad_R / np.linalg.norm(grad_R)
         self.R[(slice(None),) + action_idx] += self.alpha * error_signal * grad_L / np.linalg.norm(grad_L)
+
+        if self.Q_hat_gt is not None:
+            self.estimate_deviation()
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()

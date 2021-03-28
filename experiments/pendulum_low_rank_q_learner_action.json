@@ -1,8 +1,8 @@
 {
-  "episodes": 5000,
+  "episodes": 7500,
   "max_steps": 100,
   "decay": 0.99999,
-  "epsilon": 0.2,
+  "epsilon": 0.6,
   "alpha": 0.1,
   "gamma": 0.9,
   "min_states": [-1, -5],

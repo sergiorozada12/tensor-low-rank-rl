@@ -270,4 +270,52 @@ class Plotter:
                 axes[index].plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
         plt.show()
 
+    @staticmethod
+    def plot_convergence(base_paths_arr, experiment_paths_arr, step_diff, th):
+        saver = Saver()
+        fig, axes = plt.subplots(nrows=1, ncols=len(base_paths_arr))
+        for index in range(len(base_paths_arr)):
+            base_paths = base_paths_arr[index]
+            experiment_paths = experiment_paths_arr[index]
+
+            for i in range(len(base_paths)):
+                path_base = base_paths[i]
+                with open(experiment_paths[i]) as j:
+                    params = json.loads(j.read())
+
+                n_simulations = params["n_simulations"]
+                if "lr" in path_base:
+                    n_experiments = len(params["k"])
+                else:
+                    n_experiments = max(len(params["bucket_actions"]), len(params["bucket_states"]))
+
+                parameters = np.zeros((n_simulations, n_experiments))
+                convergences = np.zeros((n_simulations, n_experiments))
+
+                for j in range(n_experiments):
+                    for k in range(n_simulations):
+                        model = saver.load_from_pickle(path_base.format(j, k))
+                        if "lr" in path_base:
+                            parameters[k, j] = np.prod(model.L.shape) + np.prod(model.R.shape)
+                            for m in range(len(model.Q_hat_norms)):
+                                if (m + step_diff) == len(model.Q_hat_norms):
+                                    convergences[k, j] = len(model.Q_hat_norms)
+                                    break
+
+                                if (model.Q_hat_norms[m] - model.Q_hat_norms[m + step_diff]) < th:
+                                    convergences[k, j] = m
+                                    break
+                        else:
+                            parameters[k, j] = np.prod(model.Q.shape)
+                            for m in range(len(model.Q_norms)):
+                                if (m + step_diff) == len(model.Q_norms):
+                                    convergences[k, j] = len(model.Q_norms)
+                                    break
+
+                                if (model.Q_norms[m] - model.Q_norms[m + step_diff]) < th:
+                                    convergences[k, j] = m
+                                    break
+                axes[index].plot(np.mean(parameters, axis=0), np.mean(convergences, axis=0))
+        plt.show()
+
 

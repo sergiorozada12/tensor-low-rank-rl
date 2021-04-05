@@ -25,5 +25,14 @@ base_paths_mount = ["models/low_rank_reward/mountaincar_ql_action_bucket_{}_exp_
 experiment_paths_mount = ["experiments/mountaincar_low_rank_q_learner_action.json",
                           "experiments/mountaincar_low_rank_lr_learner.json"]
 
-Plotter.plot_rewards([base_paths_pend, base_paths_cart, base_paths_mount],
-                     [experiment_paths_pend, experiment_paths_cart, experiment_paths_mount])
+Plotter.plot_rewards([base_paths_pend, base_paths_mount],
+                     [experiment_paths_pend, experiment_paths_mount])
+
+# Plot 3
+base_paths_pend = ["models/low_rank_convergence/pendulum_ql_action_bucket_{}_exp_{}.pck",
+                   "models/low_rank_convergence/pendulum_lr_k_bucket_{}_exp_{}.pck"]
+
+Plotter.plot_convergence([base_paths_pend, base_paths_pend],
+                         [experiment_paths_pend, experiment_paths_pend],
+                         step_diff=10000,
+                         th=0.001)

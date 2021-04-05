@@ -4,6 +4,9 @@ import pickle
 import json
 from models import QLearning, LowRankLearning
 
+from functools import partial
+import multiprocessing
+
 
 class Discretizer:
     def __init__(self,
@@ -178,49 +181,74 @@ class Experiment:
         saver.save_to_pickle(path_output, lr_learner)
 
     @staticmethod
+    def wrapper_parallel_ql_experiment(index_exp, env, params, path_output_base, path_ground_truth, index_buck):
+        saver = Saver()
+
+        path_output = path_output_base.format(index_buck, index_exp)
+        Q_gt = saver.load_from_pickle(path_ground_truth.format(index_buck, index_exp)).Q if path_ground_truth else None
+        Experiment.run_q_learning_experiment(env=env,
+                                             parameters=params,
+                                             path_output=path_output,
+                                             Q_gt=Q_gt)
+
+    @staticmethod
+    def wrapper_parallel_lr_experiment(index_exp, env, params, path_output_base, path_ground_truth, index_buck):
+        saver = Saver()
+
+        path_output = path_output_base.format(index_buck, index_exp)
+        model_gt = saver.load_from_pickle(path_ground_truth.format(i, j)) if path_ground_truth else None
+        Q_hat_gt = model_gt.L @ model_gt.R if model_gt else None
+
+        Experiment.run_lr_learning_experiment(env=env,
+                                              parameters=params,
+                                              path_output=path_output,
+                                              Q_hat_gt=Q_hat_gt)
+
+    @staticmethod
     def run_q_learning_experiments(env, parameters, path_output_base, path_ground_truth=None):
 
-        saver = Saver()
         varying_action = True if len(parameters["bucket_actions"]) > 1 else False
+        length = len(parameters["bucket_actions"]) if varying_action else len(parameters["bucket_states"])
 
-        if varying_action:
-            for i in range(len(parameters["bucket_actions"])):
-                parameters_to_experiment = parameters.copy()
+        for i in range(length):
+            parameters_to_experiment = parameters.copy()
+
+            if varying_action:
                 parameters_to_experiment["bucket_actions"] = parameters["bucket_actions"][i]
-                for j in range(parameters["n_simulations"]):
-                    path_output = path_output_base.format(i, j)
-                    Q_gt = saver.load_from_pickle(path_ground_truth.format(i, j)).Q if path_ground_truth else None
-                    Experiment.run_q_learning_experiment(env,
-                                                         parameters_to_experiment,
-                                                         path_output,
-                                                         Q_gt)
-        else:
-            for i in range(len(parameters["bucket_states"])):
-                parameters_to_experiment = parameters.copy()
+            else:
                 parameters_to_experiment["bucket_states"] = parameters["bucket_states"][i]
-                for j in range(parameters["n_simulations"]):
-                    path_output = path_output_base.format(i, j)
-                    Q_gt = saver.load_from_pickle(path_ground_truth.format(i, j)).Q if path_ground_truth else None
-                    Experiment.run_q_learning_experiment(env,
-                                                         parameters_to_experiment,
-                                                         path_output,
-                                                         Q_gt)
+
+            wrapper = partial(Experiment.wrapper_parallel_ql_experiment,
+                              env=env,
+                              params=parameters_to_experiment,
+                              path_output_base=path_output_base,
+                              path_ground_truth=path_ground_truth,
+                              index_buck=i)
+
+            exp_indices = list(range(parameters["n_simulations"]))
+
+            with multiprocessing.Pool(processes=2) as p:
+                p.map(wrapper, exp_indices)
+
 
     @staticmethod
     def run_lr_learning_experiments(env, parameters, path_output_base, path_ground_truth=None):
-        saver = Saver()
+
         for i in range(len(parameters["k"])):
             parameters_to_experiment = parameters.copy()
             parameters_to_experiment["k"] = parameters["k"][i]
-            for j in range(parameters["n_simulations"]):
-                path_output = path_output_base.format(i, j)
-                model_gt = saver.load_from_pickle(path_ground_truth.format(i, j)) if path_ground_truth else None
-                Q_hat_gt = model_gt.L @ model_gt.R if model_gt else None
 
-                Experiment.run_lr_learning_experiment(env,
-                                                      parameters_to_experiment,
-                                                      path_output,
-                                                      Q_hat_gt)
+            wrapper = partial(Experiment.wrapper_parallel_lr_experiment,
+                              env=env,
+                              params=parameters_to_experiment,
+                              path_output_base=path_output_base,
+                              path_ground_truth=path_ground_truth,
+                              index_buck=i)
+
+            exp_indices = list(range(parameters["n_simulations"]))
+
+            with multiprocessing.Pool(processes=2) as p:
+                p.map(wrapper, exp_indices)
 
 
 class Plotter:

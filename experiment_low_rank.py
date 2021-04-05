@@ -26,7 +26,7 @@ env_cart = ContinuousCartPoleEnv()
 env_mountaincar = Continuous_MountainCarEnv()
 
 # 1) REWARD
-"""
+
 # 1.1) Pendulum
 Experiment.run_q_learning_experiments(env_pend,
                                       parameters_pend_ql_action,
@@ -37,7 +37,7 @@ Experiment.run_lr_learning_experiments(env_pend,
                                        "models/low_rank_reward/pendulum_lr_k_bucket_{}_exp_{}.pck")
 
 print("Pendulum DONE")
-"""
+
 # 1.2) Cartpole
 """
 Experiment.run_q_learning_experiments(env_cart,
@@ -51,7 +51,7 @@ Experiment.run_lr_learning_experiments(env_cart,
 print("Cartpole DONE")"""
 
 # 1.3) Mountaincar
-
+"""
 Experiment.run_q_learning_experiments(env_mountaincar,
                                       parameters_mountaincar_ql_action,
                                       "models/low_rank_reward/mountaincar_ql_action_bucket_{}_exp_{}.pck")
@@ -61,7 +61,7 @@ Experiment.run_lr_learning_experiments(env_mountaincar,
                                        "models/low_rank_reward/mountaincar_lr_k_bucket_{}_exp_{}.pck")
 
 print("Mountaincar DONE")
-
+"""
 """
 
 # 2) CONVERGENCE
@@ -93,7 +93,7 @@ Experiment.run_lr_learning_experiments(env_cart,
 print("Cartpole DONE")"""
 
 # 2.3) Mountaincar
-
+"""
 Experiment.run_q_learning_experiments(env_mountaincar,
                                       parameters_mountaincar_ql_action,
                                       "models/low_rank_convergence/mountaincar_ql_action_bucket_{}_exp_{}.pck",
@@ -104,3 +104,4 @@ Experiment.run_lr_learning_experiments(env_mountaincar,
                                        "models/low_rank_convergence/mountaincar_lr_k_bucket_{}_exp_{}.pck",
                                        "models/low_rank_reward/mountaincar_lr_k_bucket_{}_exp_{}.pck")
 print("Mountaincar DONE")
+"""

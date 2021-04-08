@@ -161,6 +161,7 @@ class Experiment:
                                   bucket_actions=parameters["bucket_actions"])
 
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
+        decay_alpha = parameters["decay_alpha"] if "decay_alpha" in parameters.keys() else 1.0
         init_ord = parameters["init_ord"] if "init_ord" in parameters.keys() else 1.0
         min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 1.0
 
@@ -173,6 +174,7 @@ class Experiment:
                                      gamma=parameters["gamma"],
                                      k=parameters["k"],
                                      decay=decay,
+                                     decay_alpha=decay_alpha,
                                      init_ord=init_ord,
                                      min_epsilon=min_epsilon,
                                      Q_hat_ground_truth=Q_hat_gt)

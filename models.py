@@ -127,6 +127,7 @@ class LowRankLearning:
                  gamma,
                  k,
                  decay=1.0,
+                 decay_alpha=1.0,
                  init_ord=1,
                  min_epsilon=0.0,
                  Q_hat_ground_truth=None):
@@ -139,6 +140,7 @@ class LowRankLearning:
         self.alpha = alpha
         self.gamma = gamma
         self.decay = decay
+        self.decay_alpha = decay_alpha
         self.min_epsilon = min_epsilon
 
         self.L = np.random.rand(*(list(self.discretizer.n_states) + [k]))*init_ord
@@ -212,6 +214,9 @@ class LowRankLearning:
 
             if (not is_greedy) & is_train & (self.epsilon > self.min_epsilon):
                 self.epsilon *= self.decay
+
+            if (not is_greedy) & is_train:
+                self.alpha *= self.decay_alpha
 
         return step + 1, cumulative_reward
 

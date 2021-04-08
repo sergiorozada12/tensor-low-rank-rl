@@ -229,7 +229,7 @@ class Experiment:
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=2) as p:
+            with multiprocessing.Pool(processes=1) as p:
                 p.map(wrapper, exp_indices)
 
 
@@ -249,7 +249,7 @@ class Experiment:
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=2) as p:
+            with multiprocessing.Pool(processes=1) as p:
                 p.map(wrapper, exp_indices)
 
 

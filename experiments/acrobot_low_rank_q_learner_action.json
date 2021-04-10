@@ -4,7 +4,7 @@
   "decay": 0.99999,
   "epsilon": 1.0,
   "alpha": 0.1,
-  "gamma": 0.99,
+  "gamma": 0.95,
   "min_states": [-3.1416, -3.1416, -14, -30],
   "max_states": [3.1416, 3.1416, 14, 30],
   "min_actions": [-10],

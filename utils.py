@@ -134,7 +134,7 @@ class Experiment:
                                   bucket_actions=parameters["bucket_actions"])
 
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
-        min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 1.0
+        min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 0.0
 
         q_learner = QLearning(env=env,
                               discretizer=discretizer,
@@ -163,7 +163,7 @@ class Experiment:
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
         decay_alpha = parameters["decay_alpha"] if "decay_alpha" in parameters.keys() else 1.0
         init_ord = parameters["init_ord"] if "init_ord" in parameters.keys() else 1.0
-        min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 1.0
+        min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 0.0
 
         lr_learner = LowRankLearning(env=env,
                                      discretizer=discretizer,
@@ -229,7 +229,7 @@ class Experiment:
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=1) as p:
+            with multiprocessing.Pool(processes=2) as p:
                 p.map(wrapper, exp_indices)
 
 
@@ -249,7 +249,7 @@ class Experiment:
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=1) as p:
+            with multiprocessing.Pool(processes=2) as p:
                 p.map(wrapper, exp_indices)
 
 

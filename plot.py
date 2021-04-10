@@ -26,8 +26,14 @@ base_paths_mount = ["models/low_rank_reward/mountaincar_ql_action_bucket_{}_exp_
 experiment_paths_mount = ["experiments/mountaincar_low_rank_q_learner_action.json",
                           "experiments/mountaincar_low_rank_lr_learner.json"]
 
-Plotter.plot_rewards([base_paths_pend, base_paths_pend],
-                     [experiment_paths_pend, experiment_paths_pend])
+base_paths_acrobot = ["models/low_rank_reward/acrobot_ql_action_bucket_{}_exp_{}.pck",
+                    "models/low_rank_reward/acrobot_lr_k_bucket_{}_exp_{}.pck"]
+
+experiment_paths_acrobot = ["experiments/acrobot_low_rank_q_learner_action.json",
+                          "experiments/acrobot_low_rank_lr_learner.json"]
+
+Plotter.plot_rewards([base_paths_acrobot, base_paths_acrobot],
+                     [experiment_paths_acrobot, experiment_paths_acrobot])
 
 # Plot 3
 """

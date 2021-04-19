@@ -32,8 +32,8 @@ base_paths_acrobot = ["models/low_rank_reward/acrobot_ql_action_bucket_{}_exp_{}
 experiment_paths_acrobot = ["experiments/acrobot_low_rank_q_learner_action.json",
                           "experiments/acrobot_low_rank_lr_learner.json"]
 
-Plotter.plot_rewards([base_paths_acrobot, base_paths_acrobot],
-                     [experiment_paths_acrobot, experiment_paths_acrobot])
+Plotter.plot_rewards([base_paths_pend, base_paths_cart, base_paths_mount],
+                     [experiment_paths_pend, experiment_paths_cart, experiment_paths_mount])
 
 # Plot 3
 """

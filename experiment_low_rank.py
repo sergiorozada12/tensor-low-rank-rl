@@ -63,7 +63,7 @@ if __name__ == '__main__':
     print("Cartpole DONE")"""
 
     # 1.3) Mountaincar
-    """
+    
     Experiment.run_q_learning_experiments(env_mountaincar,
                                           parameters_mountaincar_ql_action,
                                           "models/low_rank_reward/mountaincar_ql_action_bucket_{}_exp_{}.pck")
@@ -73,8 +73,8 @@ if __name__ == '__main__':
                                            "models/low_rank_reward/mountaincar_lr_k_bucket_{}_exp_{}.pck")
 
     print("Mountaincar DONE")
+    
     """
-
     # 2.4) Acrobot
     Experiment.run_q_learning_experiments(env_acrobot,
                                           parameters_acrobot_ql_action,
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     Experiment.run_lr_learning_experiments(env_acrobot,
                                            parameters_acrobot_lr,
                                            "models/low_rank_reward/acrobot_lr_k_bucket_{}_exp_{}.pck")
-
+    """
     """
 
     # 2) CONVERGENCE

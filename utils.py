@@ -7,6 +7,8 @@ from models import QLearning, LowRankLearning
 from functools import partial
 import multiprocessing
 
+#import matplotlib
+#matplotlib.use("tkagg")
 
 class Discretizer:
     def __init__(self,
@@ -229,7 +231,7 @@ class Experiment:
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=2) as p:
+            with multiprocessing.Pool(processes=40) as p:
                 p.map(wrapper, exp_indices)
 
 
@@ -249,7 +251,7 @@ class Experiment:
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=2) as p:
+            with multiprocessing.Pool(processes=40) as p:
                 p.map(wrapper, exp_indices)
 
 
@@ -298,7 +300,8 @@ class Plotter:
                             parameters[k, j] = np.prod(model.Q.shape)
                         rewards[k, j] = np.median(model.greedy_cumulative_reward[-10:])
                 axes[index].plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
-        plt.show()
+        #plt.show()
+        plt.savefig("/home/srozada/Escritorio/mygraph.png")
 
     @staticmethod
     def plot_convergence(base_paths_arr, experiment_paths_arr, step_diff, th):

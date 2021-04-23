@@ -1,4 +1,5 @@
 import numpy as np
+import tensorly as tl
 
 
 class QLearning:
@@ -350,7 +351,7 @@ class TensorLowRankLearning:
             state = state_prime
 
             if (not is_greedy) & is_train & (self.epsilon > self.min_epsilon):
-                self.epsilon *= self.decay_epsilon
+                self.epsilon *= self.decay
 
             if (not is_greedy):
                 self.alpha *= self.decay_alpha

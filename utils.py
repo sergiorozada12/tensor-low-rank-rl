@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import json
-from models import QLearning, LowRankLearning
+from models import QLearning, LowRankLearning, TensorLowRankLearning
 
 from functools import partial
 import multiprocessing
@@ -185,6 +185,37 @@ class Experiment:
         saver.save_to_pickle(path_output, lr_learner)
 
     @staticmethod
+    def run_tlr_learning_experiment(env, parameters, path_output, Q_hat_gt=None):
+        saver = Saver()
+        discretizer = Discretizer(min_points_states=parameters["min_states"],
+                                  max_points_states=parameters["max_states"],
+                                  bucket_states=parameters["bucket_states"],
+                                  min_points_actions=parameters["min_actions"],
+                                  max_points_actions=parameters["max_actions"],
+                                  bucket_actions=parameters["bucket_actions"])
+
+        decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
+        decay_alpha = parameters["decay_alpha"] if "decay_alpha" in parameters.keys() else 1.0
+        init_ord = parameters["init_ord"] if "init_ord" in parameters.keys() else 1.0
+        min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 0.0
+
+        tlr_learner = TensorLowRankLearning(env=env,
+                                            discretizer=discretizer,
+                                            episodes=parameters["episodes"],
+                                            max_steps=parameters["max_steps"],
+                                            epsilon=parameters["epsilon"],
+                                            alpha=parameters["alpha"],
+                                            gamma=parameters["gamma"],
+                                            k=parameters["k"],
+                                            decay=decay,
+                                            decay_alpha=decay_alpha,
+                                            init_ord=init_ord,
+                                            min_epsilon=min_epsilon)
+
+        tlr_learner.train(run_greedy_frequency=10)
+        saver.save_to_pickle(path_output, tlr_learner)
+
+    @staticmethod
     def wrapper_parallel_ql_experiment(index_exp, env, params, path_output_base, path_ground_truth, index_buck):
         saver = Saver()
 
@@ -207,6 +238,19 @@ class Experiment:
                                               parameters=params,
                                               path_output=path_output,
                                               Q_hat_gt=Q_hat_gt)
+
+    @staticmethod
+    def wrapper_parallel_tlr_experiment(index_exp, env, params, path_output_base, path_ground_truth, index_buck):
+        saver = Saver()
+
+        path_output = path_output_base.format(index_buck, index_exp)
+        model_gt = saver.load_from_pickle(path_ground_truth.format(i, j)) if path_ground_truth else None
+        Q_hat_gt = model_gt.L @ model_gt.R if model_gt else None
+
+        Experiment.run_tlr_learning_experiment(env=env,
+                                               parameters=params,
+                                               path_output=path_output,
+                                               Q_hat_gt=Q_hat_gt)
 
     @staticmethod
     def run_q_learning_experiments(env, parameters, path_output_base, path_ground_truth=None):
@@ -254,6 +298,25 @@ class Experiment:
             with multiprocessing.Pool(processes=40) as p:
                 p.map(wrapper, exp_indices)
 
+    @staticmethod
+    def run_tlr_learning_experiments(env, parameters, path_output_base, path_ground_truth=None):
+
+        for i in range(len(parameters["k"])):
+            parameters_to_experiment = parameters.copy()
+            parameters_to_experiment["k"] = parameters["k"][i]
+
+            wrapper = partial(Experiment.wrapper_parallel_tlr_experiment,
+                              env=env,
+                              params=parameters_to_experiment,
+                              path_output_base=path_output_base,
+                              path_ground_truth=path_ground_truth,
+                              index_buck=i)
+
+            exp_indices = list(range(parameters["n_simulations"]))
+
+            with multiprocessing.Pool(processes=2) as p:
+                p.map(wrapper, exp_indices)
+
 
 class Plotter:
 
@@ -294,14 +357,16 @@ class Plotter:
                 for j in range(n_experiments):
                     for k in range(n_simulations):
                         model = saver.load_from_pickle(path_base.format(j, k))
-                        if "lr" in path_base:
+                        if "_lr_" in path_base:
                             parameters[k, j] = np.prod(model.L.shape) + np.prod(model.R.shape)
+                        elif "_tlr_" in path_base:
+                            parameters[k, j] = np.sum([np.prod(factor.shape) for factor in model.factors])
                         else:
                             parameters[k, j] = np.prod(model.Q.shape)
                         rewards[k, j] = np.median(model.greedy_cumulative_reward[-10:])
                 axes[index].plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
-        #plt.show()
-        plt.savefig("/home/srozada/Escritorio/mygraph.png")
+        plt.show()
+        #plt.savefig("/home/srozada/Escritorio/mygraph.png")
 
     @staticmethod
     def plot_convergence(base_paths_arr, experiment_paths_arr, step_diff, th):

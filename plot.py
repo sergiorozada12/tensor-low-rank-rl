@@ -32,6 +32,12 @@ base_paths_acrobot = ["models/low_rank_reward/acrobot_ql_action_bucket_{}_exp_{}
 experiment_paths_acrobot = ["experiments/acrobot_low_rank_q_learner_action.json",
                           "experiments/acrobot_low_rank_lr_learner.json"]
 
+base_paths_pend = ["models/low_rank_reward/pendulum_tlr_k_bucket_{}_exp_{}.pck"]
+experiment_paths_pend = ["experiments/pendulum_low_rank_tlr_learner.json"]
+
+Plotter.plot_rewards([base_paths_pend, base_paths_pend],
+                     [experiment_paths_pend, experiment_paths_pend])
+
 Plotter.plot_rewards([base_paths_pend, base_paths_cart, base_paths_mount],
                      [experiment_paths_pend, experiment_paths_cart, experiment_paths_mount])
 

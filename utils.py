@@ -6,18 +6,22 @@ from models import QLearning, LowRankLearning, TensorLowRankLearning
 
 from functools import partial
 import multiprocessing
+import itertools
 
 #import matplotlib
 #matplotlib.use("tkagg")
 
 class Discretizer:
-    def __init__(self,
-                 min_points_states,
-                 max_points_states,
-                 bucket_states,
-                 min_points_actions,
-                 max_points_actions,
-                 bucket_actions):
+    def __init__(
+        self,
+        min_points_states,
+        max_points_states,
+        bucket_states,
+        min_points_actions,
+        max_points_actions,
+        bucket_actions
+        ):
+
         self.min_points_states = np.array(min_points_states)
         self.max_points_states = np.array(max_points_states)
         self.bucket_states = np.array(bucket_states)
@@ -51,13 +55,15 @@ class Discretizer:
 
 
 class DiscretizerReshape:
-    def __init__(self,
-                 min_points_states,
-                 max_points_states,
-                 bucket_states,
-                 min_points_actions,
-                 max_points_actions,
-                 bucket_actions):
+    def __init__(
+        self,
+        min_points_states,
+        max_points_states,
+        bucket_states,
+        min_points_actions,
+        max_points_actions,
+        bucket_actions
+        ):
 
         self.min_points_states = np.array(min_points_states)
         self.max_points_states = np.array(max_points_states)
@@ -128,26 +134,30 @@ class Experiment:
     @staticmethod
     def run_q_learning_experiment(env, parameters, path_output, Q_gt=None):
         saver = Saver()
-        discretizer = Discretizer(min_points_states=parameters["min_states"],
-                                  max_points_states=parameters["max_states"],
-                                  bucket_states=parameters["bucket_states"],
-                                  min_points_actions=parameters["min_actions"],
-                                  max_points_actions=parameters["max_actions"],
-                                  bucket_actions=parameters["bucket_actions"])
+        discretizer = Discretizer(
+            min_points_states=parameters["min_states"],
+            max_points_states=parameters["max_states"],
+            bucket_states=parameters["bucket_states"],
+            min_points_actions=parameters["min_actions"],
+            max_points_actions=parameters["max_actions"],
+            bucket_actions=parameters["bucket_actions"]
+            )
 
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
         min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 0.0
 
-        q_learner = QLearning(env=env,
-                              discretizer=discretizer,
-                              episodes=parameters["episodes"],
-                              max_steps=parameters["max_steps"],
-                              epsilon=parameters["epsilon"],
-                              alpha=parameters["alpha"],
-                              gamma=parameters["gamma"],
-                              decay=decay,
-                              min_epsilon=min_epsilon,
-                              Q_ground_truth=Q_gt)
+        q_learner = QLearning(
+            env=env,
+            discretizer=discretizer,
+            episodes=parameters["episodes"],
+            max_steps=parameters["max_steps"],
+            epsilon=parameters["epsilon"],
+            alpha=parameters["alpha"],
+            gamma=parameters["gamma"],
+            decay=decay,
+            min_epsilon=min_epsilon,
+            Q_ground_truth=Q_gt
+            )
 
         q_learner.train(run_greedy_frequency=10)
         saver.save_to_pickle(path_output, q_learner)
@@ -155,31 +165,35 @@ class Experiment:
     @staticmethod
     def run_lr_learning_experiment(env, parameters, path_output, Q_hat_gt=None):
         saver = Saver()
-        discretizer = Discretizer(min_points_states=parameters["min_states"],
-                                  max_points_states=parameters["max_states"],
-                                  bucket_states=parameters["bucket_states"],
-                                  min_points_actions=parameters["min_actions"],
-                                  max_points_actions=parameters["max_actions"],
-                                  bucket_actions=parameters["bucket_actions"])
+        discretizer = Discretizer(
+            min_points_states=parameters["min_states"],
+            max_points_states=parameters["max_states"],
+            bucket_states=parameters["bucket_states"],
+            min_points_actions=parameters["min_actions"],
+            max_points_actions=parameters["max_actions"],
+            bucket_actions=parameters["bucket_actions"]
+            )
 
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
         decay_alpha = parameters["decay_alpha"] if "decay_alpha" in parameters.keys() else 1.0
         init_ord = parameters["init_ord"] if "init_ord" in parameters.keys() else 1.0
         min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 0.0
 
-        lr_learner = LowRankLearning(env=env,
-                                     discretizer=discretizer,
-                                     episodes=parameters["episodes"],
-                                     max_steps=parameters["max_steps"],
-                                     epsilon=parameters["epsilon"],
-                                     alpha=parameters["alpha"],
-                                     gamma=parameters["gamma"],
-                                     k=parameters["k"],
-                                     decay=decay,
-                                     decay_alpha=decay_alpha,
-                                     init_ord=init_ord,
-                                     min_epsilon=min_epsilon,
-                                     Q_hat_ground_truth=Q_hat_gt)
+        lr_learner = LowRankLearning(
+            env=env,
+            discretizer=discretizer,
+            episodes=parameters["episodes"],
+            max_steps=parameters["max_steps"],
+            epsilon=parameters["epsilon"],
+            alpha=parameters["alpha"],
+            gamma=parameters["gamma"],
+            k=parameters["k"],
+            decay=decay,
+            decay_alpha=decay_alpha,
+            init_ord=init_ord,
+            min_epsilon=min_epsilon,
+            Q_hat_ground_truth=Q_hat_gt
+            )
 
         lr_learner.train(run_greedy_frequency=10)
         saver.save_to_pickle(path_output, lr_learner)
@@ -187,30 +201,34 @@ class Experiment:
     @staticmethod
     def run_tlr_learning_experiment(env, parameters, path_output, Q_hat_gt=None):
         saver = Saver()
-        discretizer = Discretizer(min_points_states=parameters["min_states"],
-                                  max_points_states=parameters["max_states"],
-                                  bucket_states=parameters["bucket_states"],
-                                  min_points_actions=parameters["min_actions"],
-                                  max_points_actions=parameters["max_actions"],
-                                  bucket_actions=parameters["bucket_actions"])
+        discretizer = Discretizer(
+            min_points_states=parameters["min_states"],
+            max_points_states=parameters["max_states"],
+            bucket_states=parameters["bucket_states"],
+            min_points_actions=parameters["min_actions"],
+            max_points_actions=parameters["max_actions"],
+            bucket_actions=parameters["bucket_actions"]
+            )
 
         decay = parameters["decay"] if "decay" in parameters.keys() else 1.0
         decay_alpha = parameters["decay_alpha"] if "decay_alpha" in parameters.keys() else 1.0
         init_ord = parameters["init_ord"] if "init_ord" in parameters.keys() else 1.0
         min_epsilon = parameters["min_epsilon"] if "min_epsilon" in parameters.keys() else 0.0
 
-        tlr_learner = TensorLowRankLearning(env=env,
-                                            discretizer=discretizer,
-                                            episodes=parameters["episodes"],
-                                            max_steps=parameters["max_steps"],
-                                            epsilon=parameters["epsilon"],
-                                            alpha=parameters["alpha"],
-                                            gamma=parameters["gamma"],
-                                            k=parameters["k"],
-                                            decay=decay,
-                                            decay_alpha=decay_alpha,
-                                            init_ord=init_ord,
-                                            min_epsilon=min_epsilon)
+        tlr_learner = TensorLowRankLearning(
+            env=env,
+            discretizer=discretizer,
+            episodes=parameters["episodes"],
+            max_steps=parameters["max_steps"],
+            epsilon=parameters["epsilon"],
+            alpha=parameters["alpha"],
+            gamma=parameters["gamma"],
+            k=parameters["k"],
+            decay=decay,
+            decay_alpha=decay_alpha,
+            init_ord=init_ord,
+            min_epsilon=min_epsilon
+            )
 
         tlr_learner.train(run_greedy_frequency=10)
         saver.save_to_pickle(path_output, tlr_learner)
@@ -221,36 +239,42 @@ class Experiment:
 
         path_output = path_output_base.format(index_buck, index_exp)
         Q_gt = saver.load_from_pickle(path_ground_truth.format(index_buck, index_exp)).Q if path_ground_truth else None
-        Experiment.run_q_learning_experiment(env=env,
-                                             parameters=params,
-                                             path_output=path_output,
-                                             Q_gt=Q_gt)
+        Experiment.run_q_learning_experiment(
+            env=env,
+            parameters=params,
+            path_output=path_output,
+            Q_gt=Q_gt
+            )
 
     @staticmethod
     def wrapper_parallel_lr_experiment(index_exp, env, params, path_output_base, path_ground_truth, index_buck):
         saver = Saver()
 
         path_output = path_output_base.format(index_buck, index_exp)
-        model_gt = saver.load_from_pickle(path_ground_truth.format(i, j)) if path_ground_truth else None
+        model_gt = saver.load_from_pickle(path_ground_truth.format('A', 'B')) if path_ground_truth else None #TODO
         Q_hat_gt = model_gt.L @ model_gt.R if model_gt else None
 
-        Experiment.run_lr_learning_experiment(env=env,
-                                              parameters=params,
-                                              path_output=path_output,
-                                              Q_hat_gt=Q_hat_gt)
+        Experiment.run_lr_learning_experiment(
+            env=env,
+            parameters=params,
+            path_output=path_output,
+            Q_hat_gt=Q_hat_gt
+            )
 
     @staticmethod
     def wrapper_parallel_tlr_experiment(index_exp, env, params, path_output_base, path_ground_truth, index_buck):
         saver = Saver()
 
         path_output = path_output_base.format(index_buck, index_exp)
-        model_gt = saver.load_from_pickle(path_ground_truth.format(i, j)) if path_ground_truth else None
+        model_gt = saver.load_from_pickle(path_ground_truth.format('A', 'B')) if path_ground_truth else None #TODO
         Q_hat_gt = model_gt.L @ model_gt.R if model_gt else None
 
-        Experiment.run_tlr_learning_experiment(env=env,
-                                               parameters=params,
-                                               path_output=path_output,
-                                               Q_hat_gt=Q_hat_gt)
+        Experiment.run_tlr_learning_experiment(
+            env=env,
+            parameters=params,
+            path_output=path_output,
+            Q_hat_gt=Q_hat_gt
+            )
 
     @staticmethod
     def run_q_learning_experiments(env, parameters, path_output_base, path_ground_truth=None):
@@ -266,16 +290,18 @@ class Experiment:
             else:
                 parameters_to_experiment["bucket_states"] = parameters["bucket_states"][i]
 
-            wrapper = partial(Experiment.wrapper_parallel_ql_experiment,
-                              env=env,
-                              params=parameters_to_experiment,
-                              path_output_base=path_output_base,
-                              path_ground_truth=path_ground_truth,
-                              index_buck=i)
+            wrapper = partial(
+                Experiment.wrapper_parallel_ql_experiment,
+                env=env,
+                params=parameters_to_experiment,
+                path_output_base=path_output_base,
+                path_ground_truth=path_ground_truth,
+                index_buck=i
+                )
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=40) as p:
+            with multiprocessing.Pool(processes=1) as p:
                 p.map(wrapper, exp_indices)
 
 
@@ -286,16 +312,18 @@ class Experiment:
             parameters_to_experiment = parameters.copy()
             parameters_to_experiment["k"] = parameters["k"][i]
 
-            wrapper = partial(Experiment.wrapper_parallel_lr_experiment,
-                              env=env,
-                              params=parameters_to_experiment,
-                              path_output_base=path_output_base,
-                              path_ground_truth=path_ground_truth,
-                              index_buck=i)
+            wrapper = partial(
+                Experiment.wrapper_parallel_lr_experiment,
+                env=env,
+                params=parameters_to_experiment,
+                path_output_base=path_output_base,
+                path_ground_truth=path_ground_truth,
+                index_buck=i
+                )
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=40) as p:
+            with multiprocessing.Pool(processes=1) as p:
                 p.map(wrapper, exp_indices)
 
     @staticmethod
@@ -305,16 +333,18 @@ class Experiment:
             parameters_to_experiment = parameters.copy()
             parameters_to_experiment["k"] = parameters["k"][i]
 
-            wrapper = partial(Experiment.wrapper_parallel_tlr_experiment,
-                              env=env,
-                              params=parameters_to_experiment,
-                              path_output_base=path_output_base,
-                              path_ground_truth=path_ground_truth,
-                              index_buck=i)
+            wrapper = partial(
+                Experiment.wrapper_parallel_tlr_experiment,
+                env=env,
+                params=parameters_to_experiment,
+                path_output_base=path_output_base,
+                path_ground_truth=path_ground_truth,
+                index_buck=i
+                )
 
             exp_indices = list(range(parameters["n_simulations"]))
 
-            with multiprocessing.Pool(processes=2) as p:
+            with multiprocessing.Pool(processes=1) as p:
                 p.map(wrapper, exp_indices)
 
 

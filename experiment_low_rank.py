@@ -9,9 +9,11 @@ parameters_file_pend_tlr = "experiments/pendulum_low_rank_tlr_learner.json"
 
 parameters_file_cart_ql_action = "experiments/cartpole_low_rank_q_learner_action.json"
 parameters_file_cart_lr = "experiments/cartpole_low_rank_lr_learner.json"
+parameters_file_cart_tlr = "experiments/cartpole_low_rank_tlr_learner.json"
 
 parameters_file_mountaincar_ql_action = "experiments/mountaincar_low_rank_q_learner_action.json"
 parameters_file_mountaincar_lr = "experiments/mountaincar_low_rank_lr_learner.json"
+parameters_file_mountaincar_tlr = "experiments/mountaincar_low_rank_tlr_learner.json"
 
 parameters_file_acrobot_ql_action = "experiments/acrobot_low_rank_q_learner_action.json"
 parameters_file_acrobot_lr = "experiments/acrobot_low_rank_lr_learner.json"
@@ -22,9 +24,11 @@ with open(parameters_file_pend_tlr) as j: parameters_pend_tlr = json.loads(j.rea
 
 with open(parameters_file_cart_ql_action) as j: parameters_cart_ql_action = json.loads(j.read())
 with open(parameters_file_cart_lr) as j: parameters_cart_lr = json.loads(j.read())
+with open(parameters_file_cart_tlr) as j: parameters_cart_tlr = json.loads(j.read())
 
 with open(parameters_file_mountaincar_ql_action) as j: parameters_mountaincar_ql_action = json.loads(j.read())
 with open(parameters_file_mountaincar_lr) as j: parameters_mountaincar_lr = json.loads(j.read())
+with open(parameters_file_mountaincar_tlr) as j: parameters_mountaincar_tlr = json.loads(j.read())
 
 with open(parameters_file_acrobot_ql_action) as j: parameters_acrobot_ql_action = json.loads(j.read())
 with open(parameters_file_acrobot_lr) as j: parameters_acrobot_lr = json.loads(j.read())
@@ -40,46 +44,69 @@ if __name__ == '__main__':
 
     # 1) REWARD
 
-    """
     # 1.1) Pendulum
-    Experiment.run_q_learning_experiments(env_pend,
-                                          parameters_pend_ql_action,
-                                          "models/low_rank_reward/pendulum_ql_action_bucket_{}_exp_{}.pck")
+    Experiment.run_q_learning_experiments(
+        env_pend,
+        parameters_pend_ql_action,
+        "models/low_rank_reward/pendulum_ql_action_bucket_{}_exp_{}.pck"
+        )
 
-    Experiment.run_lr_learning_experiments(env_pend,
-                                           parameters_pend_lr,
-                                           "models/low_rank_reward/pendulum_lr_k_bucket_{}_exp_{}.pck")
-    """
-    Experiment.run_tlr_learning_experiments(env_pend,
-                                            parameters_pend_tlr,
-                                            "models/low_rank_reward/pendulum_tlr_k_bucket_{}_exp_{}.pck")
+    Experiment.run_lr_learning_experiments(
+        env_pend,
+        parameters_pend_lr,
+        "models/low_rank_reward/pendulum_lr_k_bucket_{}_exp_{}.pck"
+        )
+
+    Experiment.run_tlr_learning_experiments(
+        env_pend,
+        parameters_pend_tlr,
+        "models/low_rank_reward/pendulum_tlr_k_bucket_{}_exp_{}.pck"
+        )
 
     print("Pendulum DONE")
 
     # 1.2) Cartpole
-    """
-    Experiment.run_q_learning_experiments(env_cart,
-                                          parameters_cart_ql_action,
-                                          "models/low_rank_reward/cartpole_ql_action_bucket_{}_exp_{}.pck")
+    Experiment.run_q_learning_experiments(
+        env_cart,
+        parameters_cart_ql_action,
+        "models/low_rank_reward/cartpole_ql_action_bucket_{}_exp_{}.pck"
+        )
 
-    Experiment.run_lr_learning_experiments(env_cart,
-                                           parameters_cart_lr,
-                                           "models/low_rank_reward/cartpole_lr_k_bucket_{}_exp_{}.pck")
+    Experiment.run_lr_learning_experiments(
+        env_cart,
+        parameters_cart_lr,
+        "models/low_rank_reward/cartpole_lr_k_bucket_{}_exp_{}.pck"
+        )
 
-    print("Cartpole DONE")"""
+    Experiment.run_tlr_learning_experiments(
+        env_cart,
+        parameters_cart_tlr,
+        "models/low_rank_reward/cartpole_tlr_k_bucket_{}_exp_{}.pck"
+        )
+
+    print("Cartpole DONE")
 
     # 1.3) Mountaincar
-    """
-    Experiment.run_q_learning_experiments(env_mountaincar,
-                                          parameters_mountaincar_ql_action,
-                                          "models/low_rank_reward/mountaincar_ql_action_bucket_{}_exp_{}.pck")
+    Experiment.run_q_learning_experiments(
+        env_mountaincar,
+        parameters_mountaincar_ql_action,
+        "models/low_rank_reward/mountaincar_ql_action_bucket_{}_exp_{}.pck"
+        )
 
-    Experiment.run_lr_learning_experiments(env_mountaincar,
-                                           parameters_mountaincar_lr,
-                                           "models/low_rank_reward/mountaincar_lr_k_bucket_{}_exp_{}.pck")
+    Experiment.run_lr_learning_experiments(
+        env_mountaincar,
+        parameters_mountaincar_lr,
+        "models/low_rank_reward/mountaincar_lr_k_bucket_{}_exp_{}.pck"
+        )
 
-    print("Mountaincar DONE")"""
-    
+    Experiment.run_tlr_learning_experiments(
+        env_mountaincar,
+        parameters_mountaincar_tlr,
+        "models/low_rank_reward/mountaincar_tlr_k_bucket_{}_exp_{}.pck"
+        )
+
+    print("Mountaincar DONE")
+
     """
     # 2.4) Acrobot
     Experiment.run_q_learning_experiments(env_acrobot,

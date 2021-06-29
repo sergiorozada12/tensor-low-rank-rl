@@ -3,17 +3,19 @@ import tensorly as tl
 
 
 class QLearning:
-    def __init__(self,
-                 env,
-                 discretizer,
-                 episodes,
-                 max_steps,
-                 epsilon,
-                 alpha,
-                 gamma,
-                 decay=1.0,
-                 min_epsilon=0.0,
-                 Q_ground_truth=None):
+    def __init__(
+        self,
+        env,
+        discretizer,
+        episodes,
+        max_steps,
+        epsilon,
+        alpha,
+        gamma,
+        decay=1.0,
+        min_epsilon=0.0,
+        Q_ground_truth=None
+        ):
 
         self.env = env
         self.discretizer = discretizer
@@ -103,7 +105,7 @@ class QLearning:
         self.greedy_cumulative_reward.append(cumulative_reward)
 
     def run_testing_episode(self):
-        return run_episode(is_train=False, is_greedy=True)
+        return self.run_episode(is_train=False, is_greedy=True)
 
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
@@ -118,20 +120,22 @@ class QLearning:
 
 
 class LowRankLearning:
-    def __init__(self,
-                 env,
-                 discretizer,
-                 episodes,
-                 max_steps,
-                 epsilon,
-                 alpha,
-                 gamma,
-                 k,
-                 decay=1.0,
-                 decay_alpha=1.0,
-                 init_ord=1,
-                 min_epsilon=0.0,
-                 Q_hat_ground_truth=None):
+    def __init__(
+        self,
+        env,
+        discretizer,
+        episodes,
+        max_steps,
+        epsilon,
+        alpha,
+        gamma,
+        k,
+        decay=1.0,
+        decay_alpha=1.0,
+        init_ord=1,
+        min_epsilon=0.0,
+        Q_hat_ground_truth=None
+        ):
 
         self.env = env
         self.discretizer = discretizer
@@ -232,7 +236,7 @@ class LowRankLearning:
         self.greedy_cumulative_reward.append(cumulative_reward)
 
     def run_testing_episode(self):
-        return run_episode(is_train=False, is_greedy=True)
+        return self.run_episode(is_train=False, is_greedy=True)
 
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
@@ -247,19 +251,21 @@ class LowRankLearning:
 
 
 class TensorLowRankLearning:
-    def __init__(self,
-                 env,
-                 discretizer,
-                 episodes,
-                 max_steps,
-                 epsilon,
-                 alpha,
-                 gamma,
-                 k,
-                 decay=1.0,
-                 decay_alpha=1.0,
-                 init_ord=1,
-                 min_epsilon=0.0):
+    def __init__(
+        self,
+        env,
+        discretizer,
+        episodes,
+        max_steps,
+        epsilon,
+        alpha,
+        gamma,
+        k,
+        decay=1.0,
+        decay_alpha=1.0,
+        init_ord=1,
+        min_epsilon=0.0
+        ):
 
         self.env = env
         self.discretizer = discretizer
@@ -369,7 +375,7 @@ class TensorLowRankLearning:
         self.greedy_cumulative_reward.append(cumulative_reward)
 
     def run_testing_episode(self):
-        return run_episode(is_train=False, is_greedy=True)
+        return self.run_episode(is_train=False, is_greedy=True)
 
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:

@@ -1,18 +1,18 @@
 {
-  "episodes": 10000,
+  "episodes": 5000,
   "max_steps": 10000,
   "epsilon": 1.0,
   "alpha": 0.001,
   "gamma": 0.99,
-  "decay": 0.99999,
+  "decay": 0.9999999,
   "min_states": [-1.2, -0.07],
   "max_states": [0.6, 0.07],
-  "min_actions": [-1],
-  "max_actions": [1],
+  "min_actions": [-10],
+  "max_actions": [10],
   "bucket_states": [10, 20],
-  "bucket_actions": [25],
-  "n_simulations": 100,
+  "bucket_actions": [8],
+  "n_simulations": 1,
   "init_ord": 0.1,
-  "min_epsilon": 0.1,
-  "k": [5, 10, 15, 20, 25]
+  "min_epsilon": 0.0,
+  "k": [2, 4, 6, 8]
 }

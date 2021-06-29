@@ -11,7 +11,7 @@
   "max_actions": [2],
   "bucket_states": [20, 20],
   "bucket_actions": [10],
-  "n_simulations": 5,
+  "n_simulations": 1,
   "k": [2, 5, 15, 20],
   "init_ord": 0.1
 }

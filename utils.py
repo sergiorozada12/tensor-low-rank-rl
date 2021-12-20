@@ -8,8 +8,11 @@ from functools import partial
 import multiprocessing
 import itertools
 
-#import matplotlib
-#matplotlib.use("tkagg")
+from matplotlib import rcParams
+
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = ['Tahoma']
+rcParams['font.size'] = 14
 
 class Discretizer:
     def __init__(
@@ -364,9 +367,9 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def plot_rewards(base_paths_arr, experiment_paths_arr):
+    def plot_rewards(base_paths_arr, experiment_paths_arr, legend):
         saver = Saver()
-        fig, axes = plt.subplots(nrows=1, ncols=len(base_paths_arr))
+        fig, axes = plt.subplots(ncols=1, nrows=len(base_paths_arr))
         for index in range(len(base_paths_arr)):
             base_paths = base_paths_arr[index]
             experiment_paths = experiment_paths_arr[index]
@@ -394,7 +397,11 @@ class Plotter:
                         else:
                             parameters[k, j] = np.prod(model.Q.shape)
                         rewards[k, j] = np.median(model.greedy_cumulative_reward[-10:])
-                axes[index].plot(np.mean(parameters, axis=0), np.median(rewards, axis=0))
+                axes[index].plot(np.log(np.mean(parameters, axis=0)), np.median(rewards, axis=0))
+                axes[index].grid(True)
+                axes[index].set_ylabel("Cumulative reward")
+                axes[index].legend(legend)
+        plt.xlabel("Log. number of parameters")
         plt.show()
         #plt.savefig("/home/srozada/Escritorio/mygraph.png")
 

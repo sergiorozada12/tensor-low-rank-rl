@@ -58,12 +58,13 @@ class QLearning:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
-    def update_q_matrix(self, state, action, state_prime, reward):
+    def update_q_matrix(self, state, action, state_prime, reward, done):
         state_idx = self.discretizer.get_state_index(state)
         state_prime_idx = self.discretizer.get_state_index(state_prime)
         action_idx = self.discretizer.get_action_index(action)
 
-        target_q = reward + self.gamma * np.max(self.Q[state_prime_idx + (slice(None),)])
+        q_next = np.max(self.Q[state_prime_idx + (slice(None),)]) if not done else 0
+        target_q = reward + self.gamma * q_next
         q = self.Q[state_idx + action_idx]
 
         error_signal = target_q - q
@@ -82,7 +83,7 @@ class QLearning:
             cumulative_reward += reward
 
             if is_train:
-                self.update_q_matrix(state, action, state_prime, reward)
+                self.update_q_matrix(state, action, state_prime, reward, done)
 
             if done:
                 break
@@ -182,12 +183,13 @@ class LowRankLearning:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
-    def update_q_matrix(self, state, action, state_prime, reward):
+    def update_q_matrix(self, state, action, state_prime, reward, done):
         state_idx = self.discretizer.get_state_index(state)
         state_prime_idx = self.discretizer.get_state_index(state_prime)
         action_idx = self.discretizer.get_action_index(action)
 
-        target_q = reward + self.gamma * np.max(self.L[state_prime_idx + (slice(None),)].reshape(1, -1) @ self.R)
+        q_next = np.max(self.L[state_prime_idx + (slice(None),)].reshape(1, -1) @ self.R) if not done else 0
+        target_q = reward + self.gamma * q_next
         q = np.dot(self.L[state_idx + (slice(None),)], self.R[(slice(None),) + action_idx])
 
         error_signal = target_q - q
@@ -210,7 +212,7 @@ class LowRankLearning:
             cumulative_reward += reward
 
             if is_train:
-                self.update_q_matrix(state, action, state_prime, reward)
+                self.update_q_matrix(state, action, state_prime, reward, done)
 
             if done:
                 break
@@ -317,27 +319,30 @@ class TensorLowRankLearning:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
-    def update_q_matrix(self, state, action, state_prime, reward):
+    def update_q_matrix(self, state, action, state_prime, reward, done):
 
         state_idx = self.discretizer.get_state_index(state)
         state_prime_idx = self.discretizer.get_state_index(state_prime)
         action_idx = self.discretizer.get_action_index(action)
 
-        q_simplified = self.get_q_from_state_idx(state_prime_idx)
-        target_q = reward + self.gamma * np.max(q_simplified)
+        q_next = np.max(self.get_q_from_state_idx(state_prime_idx)) if not done else 0
+        target_q = reward + self.gamma * np.max(q_next)
         q = self.get_q_from_state_action_idx(state_idx, action_idx)
 
         error_signal = target_q - q
 
         tensor_indices = state_idx + action_idx
 
+        new_factors = self.factors[:]
         for factor_idx in self.factor_indices:
             grad_factor = np.ones(self.k)
             for non_factor_idx in self.non_factor_indices[factor_idx]:
                 grad_factor *= self.factors[non_factor_idx][tensor_indices[non_factor_idx], :]
 
             update = -error_signal * grad_factor / np.linalg.norm(grad_factor)
-            self.factors[factor_idx][tensor_indices[factor_idx], :] -= self.alpha * update
+            #self.factors[factor_idx][tensor_indices[factor_idx], :] -= self.alpha * update
+            new_factors[factor_idx][tensor_indices[factor_idx], :] -= self.alpha * update
+        self.factors = new_factors[:]
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()
@@ -349,7 +354,7 @@ class TensorLowRankLearning:
             cumulative_reward += reward
 
             if is_train:
-                self.update_q_matrix(state, action, state_prime, reward)
+                self.update_q_matrix(state, action, state_prime, reward, done)
 
             if done:
                 break

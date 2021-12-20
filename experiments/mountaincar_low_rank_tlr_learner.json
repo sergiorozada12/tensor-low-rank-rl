@@ -1,5 +1,5 @@
 {
-  "episodes": 5000,
+  "episodes": 3000,
   "max_steps": 10000,
   "decay": 0.9999999,
   "epsilon": 1.0,
@@ -13,6 +13,6 @@
   "bucket_actions": [8],
   "n_simulations": 1,
   "min_epsilon": 0.0,
-  "k": [2, 4, 6, 8],
+  "k": [4, 6, 8, 10],
   "init_ord": 0.1
 }

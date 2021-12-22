@@ -16,7 +16,8 @@ class TensorLowRankLearning:
         decay=1.0,
         decay_alpha=1.0,
         init_ord=1,
-        min_epsilon=0.0
+        min_epsilon=0.0,
+        bias=0.0,
         ):
 
         self.env = env
@@ -31,7 +32,7 @@ class TensorLowRankLearning:
         self.min_epsilon = min_epsilon
         self.k = k
 
-        self.factors = [(np.random.rand(dim, self.k) - 0.) * init_ord for dim in self.discretizer.dimensions]
+        self.factors = [(np.random.rand(dim, self.k) - bias) * init_ord for dim in self.discretizer.dimensions]
         self.factor_indices = np.arange(len(self.factors))
         self.non_factor_indices = [np.delete(self.factor_indices, i).tolist() for i in self.factor_indices]
 

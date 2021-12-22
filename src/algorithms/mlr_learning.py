@@ -16,7 +16,8 @@ class MatrixLowRankLearning:
         decay_alpha=1.0,
         init_ord=1,
         min_epsilon=0.0,
-        Q_hat_ground_truth=None
+        Q_hat_ground_truth=None,
+        bias=0.0,
         ):
 
         self.env = env
@@ -30,8 +31,8 @@ class MatrixLowRankLearning:
         self.decay_alpha = decay_alpha
         self.min_epsilon = min_epsilon
 
-        self.L = (np.random.rand(*(list(self.discretizer.n_states) + [k])) - 0.)*init_ord
-        self.R = (np.random.rand(*([k] + list(self.discretizer.n_actions))) - 0.)*init_ord
+        self.L = (np.random.rand(*(list(self.discretizer.n_states) + [k])) - bias)*init_ord
+        self.R = (np.random.rand(*([k] + list(self.discretizer.n_actions))) - bias)*init_ord
 
         self.Q_hat_gt = Q_hat_ground_truth
 

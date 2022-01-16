@@ -18,6 +18,7 @@ class TensorLowRankLearning:
         init_ord=1,
         min_epsilon=0.0,
         bias=0.0,
+        normalize_columns=False,
         ):
 
         self.env = env
@@ -31,6 +32,7 @@ class TensorLowRankLearning:
         self.decay_alpha = decay_alpha
         self.min_epsilon = min_epsilon
         self.k = k
+        self.normalize_columns = normalize_columns
 
         self.factors = [(np.random.rand(dim, self.k) - bias) * init_ord for dim in self.discretizer.dimensions]
         self.factor_indices = np.arange(len(self.factors))
@@ -70,6 +72,20 @@ class TensorLowRankLearning:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
+    def normalize(self):
+        n_factors = len(self.factors)
+
+        power_denominator = (n_factors - 1)/n_factors
+        power_numerator = 1/n_factors
+
+        norms_denominator = [np.linalg.norm(factor, axis=0)**power_denominator for factor in self.factors]
+        norms_numerator = [np.linalg.norm(factor, axis=0)**power_numerator for factor in self.factors]
+
+        for i in range(n_factors):
+            numerator = np.prod([norms_numerator[j] for j in range(n_factors) if j != i], axis=0)
+            scaler = numerator/norms_denominator[i]
+            self.factors[i] *= scaler
+
     def update_q_matrix(self, state, action, state_prime, reward, done):
 
         state_idx = self.discretizer.get_state_index(state)
@@ -94,15 +110,23 @@ class TensorLowRankLearning:
             #self.factors[factor_idx][tensor_indices[factor_idx], :] -= self.alpha * update
             new_factors[factor_idx][tensor_indices[factor_idx], :] -= self.alpha * update
         self.factors = new_factors[:]
+        if self.normalize_columns:
+            self.normalize()
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()
         cumulative_reward = 0
 
+        if len(state.shape) > 1:
+            state = state.flatten()
+
         for step in range(self.max_steps):
             action = self.get_greedy_action(state) if is_greedy else self.choose_action(state)
             state_prime, reward, done, _ = self.env.step(action)
             cumulative_reward += reward
+
+            if len(state_prime.shape) > 1:
+                state_prime = state_prime.flatten()
 
             if is_train:
                 self.update_q_matrix(state, action, state_prime, reward, done)

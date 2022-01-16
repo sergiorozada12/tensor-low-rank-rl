@@ -26,15 +26,15 @@ class Discretizer:
         self.max_points_actions = np.array(max_points_actions)
         self.bucket_actions = np.array(bucket_actions)
         self.spacing_actions = (self.max_points_actions - self.min_points_actions) / self.bucket_actions
-            
+
         self.range_actions = self.max_points_actions - self.min_points_actions
-        
+
         self.n_states = np.round(self.bucket_states).astype(int)
         self.n_actions = np.round(self.bucket_actions).astype(int)
         self.dimensions = np.concatenate((self.n_states, self.n_actions))
-        
+
         self.states_structure = states_structure
-        
+
         if self.states_structure != None:
             new_n_states = list()
             for i in range(len(self.states_structure)):

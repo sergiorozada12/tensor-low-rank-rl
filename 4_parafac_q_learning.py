@@ -51,8 +51,9 @@ for k in range(1, 100):
     weights, factors = parafac(q_matrix, rank=k)
     q_hat = tensorly.cp_to_tensor((weights, factors))
     error = np.linalg.norm(q_matrix.flatten() - q_hat.flatten(), 2)
+    normalizer = np.linalg.norm(q_matrix.flatten(), 2)
     ranks_pendulum.append(k)
-    errors_pendulum.append(error)
+    errors_pendulum.append(100*error/normalizer)
 
 # Cartpole
 env = CustomContinuousCartPoleEnv()
@@ -92,8 +93,9 @@ for k in range(1, 1001, 50):
     weights, factors = parafac(q_matrix, rank=k)
     q_hat = tensorly.cp_to_tensor((weights, factors))
     error = np.linalg.norm(q_matrix.flatten() - q_hat.flatten(), 2)
+    normalizer = np.linalg.norm(q_matrix.flatten(), 2)
     ranks_cartpole.append(k)
-    errors_cartpole.append(error)
+    errors_cartpole.append(100*error/normalizer)
 
 # Mountaincar
 env = CustomContinuous_MountainCarEnv()
@@ -133,8 +135,9 @@ for k in range(1, 100):
     weights, factors = parafac(q_matrix, rank=k)
     q_hat = tensorly.cp_to_tensor((weights, factors))
     error = np.linalg.norm(q_matrix.flatten() - q_hat.flatten(), 2)
+    normalizer = np.linalg.norm(q_matrix.flatten(), 2)
     ranks_mountaincar.append(k)
-    errors_mountaincar.append(error)
+    errors_mountaincar.append(100*error/normalizer)
 
 # Acrobot
 env = CustomAcrobotEnv()
@@ -174,8 +177,9 @@ for k in range(1, 1001, 50):
     weights, factors = parafac(q_matrix, rank=k)
     q_hat = tensorly.cp_to_tensor((weights, factors))
     error = np.linalg.norm(q_matrix.flatten() - q_hat.flatten(), 2)
+    normalizer = np.linalg.norm(q_matrix.flatten(), 2)
     ranks_acrobot.append(k)
-    errors_acrobot.append(error)
+    errors_acrobot.append(100*error/normalizer)
 
 with plt.style.context(['science'], ['ieee']):
     matplotlib.rcParams.update({'font.size': 18})
@@ -188,6 +192,7 @@ with plt.style.context(['science'], ['ieee']):
     axes[0].set_ylabel("(a) $\mathrm{NFE}$ (\%)")
     axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
     axes[0].set_xlim(0, 100)
+    axes[0].set_ylim(0, 100)
     axes[0].grid()
 
     axes[1].plot(ranks_cartpole, errors_cartpole)
@@ -195,6 +200,7 @@ with plt.style.context(['science'], ['ieee']):
     axes[1].set_ylabel("(b) $\mathrm{NFE}$ (\%)")
     axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
     axes[1].set_xlim(0, 1000)
+    axes[1].set_ylim(0, 100)
     axes[1].grid()
 
     axes[2].plot(ranks_mountaincar, errors_mountaincar)
@@ -202,6 +208,7 @@ with plt.style.context(['science'], ['ieee']):
     axes[2].set_ylabel("(c) $\mathrm{NFE}$ (\%)")
     axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
     axes[2].set_xlim(0, 100)
+    axes[2].set_ylim(0, 100)
     axes[2].grid()
 
     axes[3].plot(ranks_acrobot, errors_acrobot)
@@ -209,6 +216,7 @@ with plt.style.context(['science'], ['ieee']):
     axes[3].set_ylabel("(d) $\mathrm{NFE}$ (\%)")
     axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
     axes[3].set_xlim(0, 1000)
+    axes[3].set_ylim(0, 100)
     axes[3].grid()
 
     plt.tight_layout()

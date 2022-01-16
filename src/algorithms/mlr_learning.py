@@ -18,6 +18,7 @@ class MatrixLowRankLearning:
         min_epsilon=0.0,
         Q_hat_ground_truth=None,
         bias=0.0,
+        normalize_columns=False,
         ):
 
         self.env = env
@@ -30,6 +31,8 @@ class MatrixLowRankLearning:
         self.decay = decay
         self.decay_alpha = decay_alpha
         self.min_epsilon = min_epsilon
+        self.normalize_columns = normalize_columns
+        self.k = k
 
         self.L = (np.random.rand(*(list(self.discretizer.n_states) + [k])) - bias)*init_ord
         self.R = (np.random.rand(*([k] + list(self.discretizer.n_actions))) - bias)*init_ord
@@ -65,6 +68,19 @@ class MatrixLowRankLearning:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
+    def normalize(self):
+        L = self.L.reshape(-1, self.k)
+        norm_l = np.linalg.norm(L, axis=0)
+
+        R = self.R.reshape(self.k, -1)
+        norm_r = np.linalg.norm(R, axis=1)
+
+        factor_l = np.sqrt(norm_r)/np.sqrt(norm_l)
+        factor_r = np.sqrt(norm_l)/np.sqrt(norm_r)
+
+        self.L = (L*factor_l).reshape(self.L.shape)
+        self.R = (R.T*factor_r).T.reshape(self.R.shape)
+
     def update_q_matrix(self, state, action, state_prime, reward, done):
         state_idx = self.discretizer.get_state_index(state)
         state_prime_idx = self.discretizer.get_state_index(state_prime)
@@ -80,6 +96,9 @@ class MatrixLowRankLearning:
 
         self.L[state_idx + (slice(None),)] += self.alpha * error_signal * grad_R / np.linalg.norm(grad_R)
         self.R[(slice(None),) + action_idx] += self.alpha * error_signal * grad_L / np.linalg.norm(grad_L)
+
+        if self.normalize_columns:
+            self.normalize()
 
         if self.Q_hat_gt is not None:
             self.estimate_deviation()

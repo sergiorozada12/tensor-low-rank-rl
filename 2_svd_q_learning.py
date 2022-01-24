@@ -151,22 +151,22 @@ with plt.style.context(['science'], ['ieee']):
     axes = axes.flatten()
 
     axes[0].bar(np.arange(1, len(sigma_pendulum) + 1), sigma_pendulum)
-    axes[0].set_xlabel("(a)", labelpad=6)
+    axes[0].set_xlabel("(a) SV index", labelpad=6)
     axes[0].set_ylabel("$\sigma$")
     axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
     axes[1].bar(np.arange(1, len(sigma_cartpole) + 1), sigma_cartpole)
-    axes[1].set_xlabel("(b)", labelpad=6)
+    axes[1].set_xlabel("(b) SV index", labelpad=6)
     axes[1].set_ylabel("$\sigma$")
     axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
     axes[2].bar(np.arange(1, len(sigma_mountaincar) + 1), sigma_mountaincar)
-    axes[2].set_xlabel("(c)", labelpad=6)
+    axes[2].set_xlabel("(c) SV index", labelpad=6)
     axes[2].set_ylabel("$\sigma$")
     axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
     axes[3].bar(np.arange(1, len(sigma_acrobot) + 1), sigma_acrobot)
-    axes[3].set_xlabel("(d)", labelpad=6)
+    axes[3].set_xlabel("(d) SV index", labelpad=6)
     axes[3].set_ylabel("$\sigma$")
     axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 

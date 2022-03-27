@@ -75,8 +75,9 @@ class CustomContinuousCartPoleEnv(gym.Env):
         return (x, x_dot, theta, theta_dot)
 
     def step(self, action):
-        assert self.action_space.contains(action), \
-            "%r (%s) invalid" % (action, type(action))
+        if isinstance(action, np.ndarray):
+            if action.shape[0] == 1:
+                action = float(action[0])
         # Cast action to float to strip np trappings
         force = self.force_mag * float(action)
         self.state = self.stepPhysics(force)

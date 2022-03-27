@@ -1,0 +1,15 @@
+{
+    "type": "q-model",
+    "min_points_states": [-1, -5],
+    "max_points_states": [1, 5],
+    "bucket_states": [20, 20],
+    "min_points_actions": [-2],
+    "max_points_actions": [2],
+    "bucket_actions": [20],
+    "episodes": 50000,
+    "max_steps": 100,
+    "epsilon": 1.0,
+    "alpha": 0.1,
+    "gamma": 0.9,
+    "decay": 0.999999
+}

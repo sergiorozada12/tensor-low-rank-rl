@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "venv/bin/python3.8"
+    "python.pythonPath": "venv/bin/python3.8",
+    "jupyter.jupyterServerType": "remote"
 }

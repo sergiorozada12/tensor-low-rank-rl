@@ -1,18 +1,19 @@
 import torch
 
 class Mlp(torch.nn.Module):
-    def __init__(self, input_size, hidden_1_size, hidden_2_size, output_size):
-        super(Mlp, self).__init__()
-        self.fc1 = torch.nn.Linear(input_size, hidden_1_size)
-        self.relu1 = torch.nn.ReLU()
-        self.fc2 = torch.nn.Linear(hidden_1_size, hidden_2_size)
-        self.relu2 = torch.nn.ReLU()
-        self.fc3 = torch.nn.Linear(hidden_2_size, output_size)
+    def __init__(self, input_size, layers_data, output_size):
+        super().__init__()
 
-    def forward(self, x):
-        hidden1 = self.fc1(x)
-        relu1 = self.relu1(hidden1)
-        hidden2 = self.fc2(relu1)
-        relu2 = self.relu2(hidden2)
-        output = self.fc3(relu2)
-        return output
+        self.layers = torch.nn.ModuleList()
+        self.input_size = input_size
+        for size in layers_data:
+            self.layers.append(torch.nn.Linear(input_size, size))
+            self.layers.append(torch.nn.ReLU())
+            input_size = size
+        self.output_layer = torch.nn.Linear(input_size, output_size)
+
+    def forward(self, input_data):
+        for layer in self.layers:
+            input_data = layer(input_data)
+        output_data = self.output_layer(input_data)
+        return output_data

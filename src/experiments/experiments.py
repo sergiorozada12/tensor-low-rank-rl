@@ -91,9 +91,8 @@ class Experiment:
 
     def _get_dqn_models(self):
         model = Mlp(
-            self.parameters['arch'][0],
-            self.parameters['arch'][1],
-            self.parameters['arch'][2],
+            len(self.parameters['bucket_states']),
+            self.parameters['arch'],
             self.discretizer.n_actions[0]
         )
 

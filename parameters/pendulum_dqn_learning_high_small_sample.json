@@ -13,6 +13,6 @@
     "gamma": 0.9,
     "decay": 0.999999,
     "buffer_size": 10000,
-    "batch_size": 32,
+    "batch_size": 1,
     "arch": [1000, 1000]
 }

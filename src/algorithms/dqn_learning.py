@@ -57,18 +57,23 @@ class DqnLearning:
     def update_model(self):
         if len(self.buffer) < self.batch_size:
             return
+
+        sample = self.buffer.sample_batch(self.batch_size)
+        self.optimizer.zero_grad()
         
-        for sample in self.buffer.sample_batch(self.batch_size):
-            self.optimizer.zero_grad()
-
-            action_idx = self.discretizer.get_action_index(sample.action)
-            q = self.model.forward(sample.state)[action_idx]
-            q_next = self.model.forward(sample.next_state).max() if not sample.done else 0
-            q_target = sample.reward + self.gamma*q_next
-
-            loss = self.criterion(q, q_target)
-            loss.backward()
-            self.optimizer.step()
+        state = torch.stack([s.state for s in sample])
+        next_state = torch.stack([s.next_state for s in sample])
+        action_idx = torch.LongTensor([self.discretizer.get_action_index(s.action)[0] for s in sample]).unsqueeze(1)
+        reward = torch.tensor([s.reward for s in sample])
+        done_mask = torch.tensor([0.0 if s.done else 1.0 for s in sample])
+        
+        q = self.model.forward(state).gather(1, action_idx)
+        q_next = self.model.forward(next_state).amax(dim=1)*done_mask
+        q_target = reward + self.gamma*q_next
+        
+        loss = self.criterion(q, q_target)
+        loss.backward()
+        self.optimizer.step()
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()

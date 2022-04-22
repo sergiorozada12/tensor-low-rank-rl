@@ -67,7 +67,7 @@ class DqnLearning:
         reward = torch.tensor([s.reward for s in sample])
         done_mask = torch.tensor([0.0 if s.done else 1.0 for s in sample])
         
-        q = self.model.forward(state).gather(1, action_idx)
+        q = torch.squeeze(self.model.forward(state).gather(1, action_idx))
         q_next = self.model.forward(next_state).amax(dim=1)*done_mask
         q_target = reward + self.gamma*q_next
         

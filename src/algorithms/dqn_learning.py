@@ -28,8 +28,8 @@ class DqnLearning:
         self.alpha = alpha
         self.gamma = gamma
         self.decay = decay
-        self.buffer=buffer
-        self.batch_size=batch_size
+        self.buffer = buffer
+        self.batch_size = batch_size
 
         self.training_steps = []
         self.training_cumulative_reward = []
@@ -70,8 +70,9 @@ class DqnLearning:
         q = torch.squeeze(self.model.forward(state).gather(1, action_idx))
         q_next = self.model.forward(next_state).amax(dim=1)*done_mask
         q_target = reward + self.gamma*q_next
-        
+
         loss = self.criterion(q, q_target)
+        print(loss)
         loss.backward()
         self.optimizer.step()
 

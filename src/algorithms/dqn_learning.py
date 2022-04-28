@@ -63,16 +63,15 @@ class DqnLearning:
         
         state = torch.stack([s.state for s in sample])
         next_state = torch.stack([s.next_state for s in sample])
-        action_idx = torch.LongTensor([self.discretizer.get_action_index(s.action)[0] for s in sample]).unsqueeze(1)
-        reward = torch.tensor([s.reward for s in sample])
-        done_mask = torch.tensor([0.0 if s.done else 1.0 for s in sample])
+        action_idx = torch.tensor([self.discretizer.get_action_index(s.action)[0] for s in sample], dtype=torch.int64, requires_grad=False).unsqueeze(1)
+        reward = torch.tensor([s.reward for s in sample], dtype=torch.float32, requires_grad=False)
+        done_mask = torch.tensor([0 if s.done else 1 for s in sample], dtype=torch.float32, requires_grad=False)
         
         q = torch.squeeze(self.model.forward(state).gather(1, action_idx))
         q_next = self.model.forward(next_state).amax(dim=1)*done_mask
         q_target = reward + self.gamma*q_next
 
         loss = self.criterion(q, q_target)
-        print(loss)
         loss.backward()
         self.optimizer.step()
 
@@ -86,10 +85,9 @@ class DqnLearning:
             cumulative_reward += reward
 
             if is_train:
-                state_tensor =  torch.tensor(state, dtype=torch.float)
-                state_prime_tensor =  torch.tensor(state_prime, dtype=torch.float)
-                reward_tensor = torch.tensor(reward, dtype=torch.float)
-                self.buffer.push(state_tensor, action, state_prime_tensor, reward_tensor, done)
+                state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
+                state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
+                self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
                 self.update_model()
 
             if done:

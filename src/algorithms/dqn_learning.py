@@ -1,11 +1,13 @@
 import numpy as np
 import torch
 
+
 class DqnLearning:
     def __init__(
         self,
         env,
         model,
+        writer,
         discretizer,
         episodes,
         max_steps,
@@ -36,6 +38,9 @@ class DqnLearning:
         self.greedy_steps = []
         self.greedy_cumulative_reward = []
 
+        self.iteration_idx = 0
+
+        self.writer = writer
         self.criterion = torch.nn.MSELoss()
         self.optimizer = torch.optim.SGD(model.parameters(), lr=alpha)
 
@@ -64,6 +69,7 @@ class DqnLearning:
         state = torch.stack([s.state for s in sample])
         next_state = torch.stack([s.next_state for s in sample])
         action_idx = torch.tensor([self.discretizer.get_action_index(s.action)[0] for s in sample], dtype=torch.int64, requires_grad=False).unsqueeze(1)
+        #print(action_idx)
         reward = torch.tensor([s.reward for s in sample], dtype=torch.float32, requires_grad=False)
         done_mask = torch.tensor([0 if s.done else 1 for s in sample], dtype=torch.float32, requires_grad=False)
         
@@ -74,6 +80,11 @@ class DqnLearning:
         loss = self.criterion(q, q_target)
         loss.backward()
         self.optimizer.step()
+        #print(list(self.model.layers[0].parameters())[0][0, :])
+
+        self.writer.add_scalar("Loss/train", loss, self.iteration_idx)
+        self.writer.flush()
+        self.iteration_idx += 1
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()

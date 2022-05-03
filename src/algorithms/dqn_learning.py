@@ -128,9 +128,15 @@ class DqnLearning:
         if run_greedy_frequency:
             for episode in range(self.episodes):
                 self.run_training_episode()
+                self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], episode)
+                self.writer.add_scalar("Steps/train", self.training_steps[-1], episode)
+                self.writer.flush()
 
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
+                    self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], episode)
+                    self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
+                    self.writer.flush()
         else:
             for _ in range(self.episodes):
                 self.run_training_episode()

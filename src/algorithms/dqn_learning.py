@@ -59,6 +59,20 @@ class DqnLearning:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
+    def write_training_metrics(self, loss):
+        for tag, value in self.model.named_parameters():
+            if value.grad is not None:
+                self.writer.add_histogram(tag + "/grad", value.grad.cpu(), self.iteration_idx)
+
+        self.writer.add_scalar("Loss/train", loss, self.iteration_idx)
+        self.writer.flush()
+        self.iteration_idx += 1
+
+    def write_env_metrics(self, cumulative_reward, steps, episode):
+        self.writer.add_scalar("Reward/train", cumulative_reward[-1], episode)
+        self.writer.add_scalar("Steps/train", steps[-1], episode)
+        self.writer.flush()
+
     def update_model(self):
         if len(self.buffer) < self.batch_size:
             return
@@ -69,7 +83,6 @@ class DqnLearning:
         state = torch.stack([s.state for s in sample])
         next_state = torch.stack([s.next_state for s in sample])
         action_idx = torch.tensor([self.discretizer.get_action_index(s.action)[0] for s in sample], dtype=torch.int64, requires_grad=False).unsqueeze(1)
-        #print(action_idx)
         reward = torch.tensor([s.reward for s in sample], dtype=torch.float32, requires_grad=False)
         done_mask = torch.tensor([0 if s.done else 1 for s in sample], dtype=torch.float32, requires_grad=False)
         
@@ -80,11 +93,8 @@ class DqnLearning:
         loss = self.criterion(q, q_target)
         loss.backward()
         self.optimizer.step()
-        #print(list(self.model.layers[0].parameters())[0][0, :])
 
-        self.writer.add_scalar("Loss/train", loss, self.iteration_idx)
-        self.writer.flush()
-        self.iteration_idx += 1
+        self.write_training_metrics(loss)
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()
@@ -128,15 +138,11 @@ class DqnLearning:
         if run_greedy_frequency:
             for episode in range(self.episodes):
                 self.run_training_episode()
-                self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], episode)
-                self.writer.add_scalar("Steps/train", self.training_steps[-1], episode)
-                self.writer.flush()
+                self.write_env_metrics(self.training_cumulative_reward, self.training_steps, episode)
 
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
-                    self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], episode)
-                    self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
-                    self.writer.flush()
+                    self.write_env_metrics(self.greedy_cumulative_reward, self.greedy_steps, episode)
         else:
             for _ in range(self.episodes):
                 self.run_training_episode()

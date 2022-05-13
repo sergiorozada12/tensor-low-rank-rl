@@ -6,7 +6,8 @@ class DqnLearning:
     def __init__(
         self,
         env,
-        model,
+        model_online,
+        model_target,
         writer,
         discretizer,
         episodes,
@@ -21,7 +22,8 @@ class DqnLearning:
 
         self.env = env
         self.buffer = buffer
-        self.model = model
+        self.model_online = model_online
+        self.model_target = model_target
         self.discretizer = discretizer
 
         self.episodes = episodes
@@ -42,7 +44,7 @@ class DqnLearning:
 
         self.writer = writer
         self.criterion = torch.nn.MSELoss()
-        self.optimizer = torch.optim.SGD(model.parameters(), lr=alpha)
+        self.optimizer = torch.optim.SGD(self.model_online.parameters(), lr=alpha)
 
     def get_random_action(self):
         return self.env.action_space.sample()
@@ -50,7 +52,7 @@ class DqnLearning:
     def get_greedy_action(self, state):
         with torch.no_grad():
             state_tensor = torch.tensor(state, dtype=torch.float)
-            q_values = self.model.forward(state_tensor)
+            q_values = self.model_online.forward(state_tensor)
             action_idx = q_values.abs().argmax().item()
         return self.discretizer.get_action_from_index(action_idx)
 
@@ -59,19 +61,24 @@ class DqnLearning:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
-    def write_training_metrics(self, loss):
-        for tag, value in self.model.named_parameters():
-            if value.grad is not None:
-                self.writer.add_histogram(tag + "/grad", value.grad.cpu(), self.iteration_idx)
+    def write_training_metrics(self, loss, q):
+        if (self.iteration_idx % 10000) == 0:
+            for tag, value in self.model_online.named_parameters():
+                if value.grad is not None:
+                    self.writer.add_histogram(tag + "/grad", value.grad.cpu(), self.iteration_idx)
+                    self.writer.add_histogram(tag + "/weight", value, self.iteration_idx)
 
         self.writer.add_scalar("Loss/train", loss, self.iteration_idx)
-        self.writer.flush()
+        self.writer.add_histogram("Q/train", q, self.iteration_idx)
         self.iteration_idx += 1
 
-    def write_env_metrics(self, cumulative_reward, steps, episode):
-        self.writer.add_scalar("Reward/train", cumulative_reward[-1], episode)
-        self.writer.add_scalar("Steps/train", steps[-1], episode)
-        self.writer.flush()
+    def write_env_metrics_train(self, episode):
+        self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], episode)
+        self.writer.add_scalar("Steps/train", self.training_steps[-1], episode)
+
+    def write_env_metrics_greedy(self, episode):
+        self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], episode)
+        self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
 
     def update_model(self):
         if len(self.buffer) < self.batch_size:
@@ -85,16 +92,20 @@ class DqnLearning:
         action_idx = torch.tensor([self.discretizer.get_action_index(s.action)[0] for s in sample], dtype=torch.int64, requires_grad=False).unsqueeze(1)
         reward = torch.tensor([s.reward for s in sample], dtype=torch.float32, requires_grad=False)
         done_mask = torch.tensor([0 if s.done else 1 for s in sample], dtype=torch.float32, requires_grad=False)
-        
-        q = torch.squeeze(self.model.forward(state).gather(1, action_idx))
-        q_next = self.model.forward(next_state).amax(dim=1)*done_mask
+
+        q = torch.squeeze(self.model_online.forward(state).gather(1, action_idx))
+        _, action_next_idx = self.model_target.forward(next_state).max(dim=1, keepdim=True)
+        q_next = torch.squeeze(self.model_online.forward(next_state).gather(dim=1, index=action_next_idx))*done_mask
         q_target = reward + self.gamma*q_next
 
         loss = self.criterion(q, q_target)
         loss.backward()
         self.optimizer.step()
 
-        self.write_training_metrics(loss)
+        for p1, p2 in zip(self.model_target.parameters(), self.model_online.parameters()):
+            p1.data.copy_(.001*p2.data + (1 - .001)*p1.data)
+
+        self.write_training_metrics(loss, q_next)
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()
@@ -138,11 +149,15 @@ class DqnLearning:
         if run_greedy_frequency:
             for episode in range(self.episodes):
                 self.run_training_episode()
-                self.write_env_metrics(self.training_cumulative_reward, self.training_steps, episode)
+                self.write_env_metrics_train(episode)
 
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
-                    self.write_env_metrics(self.greedy_cumulative_reward, self.greedy_steps, episode)
+                    self.write_env_metrics_greedy(episode)
+
+                self.writer.flush()
         else:
             for _ in range(self.episodes):
                 self.run_training_episode()
+                self.write_env_metrics(episode)
+                self.writer.flush()

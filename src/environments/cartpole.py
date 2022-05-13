@@ -93,7 +93,7 @@ class CustomContinuousCartPoleEnv(gym.Env):
         elif self.steps_beyond_done is None:
             # Pole just fell!
             self.steps_beyond_done = 0
-            reward = 1.0 - theta**2 - 0.1*theta_dot**2 - 10*action**2
+            reward = 0.0 - theta**2 - 0.1*theta_dot**2 - 10*action**2
         else:
             if self.steps_beyond_done == 0:
                 logger.warn("""You are calling 'step()' but done = True. """)

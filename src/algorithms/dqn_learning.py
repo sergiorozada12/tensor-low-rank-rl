@@ -177,9 +177,10 @@ class DqnLearning:
                     self.run_greedy_episode()
                     self.write_env_metrics_greedy(episode)
 
-                self.writer.flush()
         else:
             for _ in range(self.episodes):
                 self.run_training_episode()
                 self.write_env_metrics(episode)
-                self.writer.flush()
+
+        if self.writer:
+            self.writer.flush()

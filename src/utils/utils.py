@@ -1,8 +1,10 @@
 import numpy as np
 from collections import namedtuple
 import random
+import operator
 
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward', 'done'))
+Data = namedtuple('Data', ('priority', 'probability', 'weight', 'index'))
 
 class Discretizer:
     def __init__(
@@ -89,6 +91,8 @@ class ReplayBuffer(object):
         self.memory = []
         np.random.seed(seed)
 
+        self.type = 'Uniform'
+
     def push(self, *args):
         if len(self.memory) < self.capacity:
             self.memory.append(None)
@@ -102,4 +106,123 @@ class ReplayBuffer(object):
         return len(self.memory)
 
     def get_buffer_size(self):
+        return len(self.memory)
+
+# Kudos to @Gillaume-Cr
+class PrioritizedReplayBuffer(object):
+    def __init__(self, action_size, buffer_size, batch_size, experiences_per_sampling, seed, compute_weights):
+        self.action_size = action_size
+        self.buffer_size = buffer_size
+        self.batch_size = batch_size
+        self.experiences_per_sampling = experiences_per_sampling
+
+        self.alpha = 0.5
+        self.alpha_decay_rate = 0.99
+        self.beta = 0.5
+        self.beta_growth_rate = 1.001
+        self.seed = random.seed(seed)
+        self.compute_weights = compute_weights
+        self.experience_count = 0
+
+        indexes = []
+        datas = []
+        for i in range(buffer_size):
+            indexes.append(i)
+            d = Data(0, 0, 0, i)
+            datas.append(d)
+
+        self.memory = {key: Transition for key in indexes}
+        self.memory_data = {key: data for key,data in zip(indexes, datas)}
+        self.sampled_batches = []
+        self.current_batch = 0
+        self.priorities_sum_alpha = 0
+        self.priorities_max = 1
+        self.weights_max = 1
+
+        self.type = 'PER'
+
+    def update_priorities(self, tds, indices):
+        for td, index in zip(tds, indices):
+            N = min(self.experience_count, self.buffer_size)
+
+            updated_priority = td[0]
+            if updated_priority > self.priorities_max:
+                self.priorities_max = updated_priority
+            
+            if self.compute_weights:
+                updated_weight = ((N * updated_priority)**(-self.beta))/self.weights_max
+                if updated_weight > self.weights_max:
+                    self.weights_max = updated_weight
+            else:
+                updated_weight = 1
+
+            old_priority = self.memory_data[index].priority
+            self.priorities_sum_alpha += updated_priority**self.alpha - old_priority**self.alpha
+            updated_probability = td[0]**self.alpha / self.priorities_sum_alpha
+            data = Data(updated_priority, updated_probability, updated_weight, index) 
+            self.memory_data[index] = data
+
+    def update_memory_sampling(self):
+        self.current_batch = 0
+        values = list(self.memory_data.values())
+        random_values = random.choices(
+            self.memory_data,
+            [data.probability for data in values],
+            k=self.experiences_per_sampling
+        )
+        self.sampled_batches = [random_values[i:i + self.batch_size] 
+                                    for i in range(0, len(random_values), self.batch_size)]
+
+    def update_parameters(self):
+        self.alpha *= self.alpha_decay_rate
+        self.beta *= self.beta_growth_rate
+        if self.beta > 1:
+            self.beta = 1
+        N = min(self.experience_count, self.buffer_size)
+        self.priorities_sum_alpha = 0
+        sum_prob_before = 0
+        for element in self.memory_data.values():
+            sum_prob_before += element.probability
+            self.priorities_sum_alpha += element.priority**self.alpha
+        sum_prob_after = 0
+        for element in self.memory_data.values():
+            probability = element.priority**self.alpha/self.priorities_sum_alpha
+            sum_prob_after += probability
+            weight = 1
+            if self.compute_weights:
+                weight = ((N*element.probability)**(-self.beta))/self.weights_max
+            d = Data(element.priority, probability, weight, element.index)
+            self.memory_data[element.index] = d
+
+    def push(self, *args):
+        self.experience_count += 1
+        index = self.experience_count % self.buffer_size
+
+        if self.experience_count > self.buffer_size:
+            temp = self.memory_data[index]
+            self.priorities_sum_alpha -= temp.priority**self.alpha
+            if temp.priority == self.priorities_max:
+                self.memory_data[index].priority = 0
+                self.priorities_max = max(self.memory_data.items(), key=operator.itemgetter(1)).priority
+            if self.compute_weights:
+                if temp.weight == self.weights_max:
+                    self.memory_data[index].weight = 0
+                    self.weights_max = max(self.memory_data.items(), key=operator.itemgetter(2)).weight
+
+        priority = self.priorities_max
+        weight = self.weights_max
+        self.priorities_sum_alpha += priority ** self.alpha
+        probability = priority ** self.alpha / self.priorities_sum_alpha
+        e = Transition(*args)
+        self.memory[index] = e
+        d = Data(priority, probability, weight, index)
+        self.memory_data[index] = d
+            
+    def sample_batch(self, batch_size):
+        sampled_batch = self.sampled_batches[self.current_batch]
+        self.current_batch += 1
+        batch = [self.memory.get(sample.index) for sample in sampled_batch]
+        return batch
+
+    def __len__(self):
         return len(self.memory)

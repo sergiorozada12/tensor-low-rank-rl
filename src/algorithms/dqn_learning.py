@@ -8,7 +8,6 @@ class DqnLearning:
         env,
         model_online,
         model_target,
-        writer,
         discretizer,
         episodes,
         max_steps,
@@ -18,6 +17,8 @@ class DqnLearning:
         buffer,
         batch_size,
         decay,
+        writer=None,
+        steps_update_buffer=None
     ):
 
         self.env = env
@@ -33,6 +34,7 @@ class DqnLearning:
         self.gamma = gamma
         self.decay = decay
         self.buffer = buffer
+        self.steps_update_buffer = steps_update_buffer
         self.batch_size = batch_size
 
         self.training_steps = []
@@ -62,6 +64,9 @@ class DqnLearning:
         return self.get_greedy_action(state)
 
     def write_training_metrics(self, loss, q):
+        if not self.writer:
+            return
+
         if (self.iteration_idx % 10000) == 0:
             for tag, value in self.model_online.named_parameters():
                 if value.grad is not None:
@@ -73,20 +78,30 @@ class DqnLearning:
         self.iteration_idx += 1
 
     def write_env_metrics_train(self, episode):
+        if not self.writer:
+            return
+
         self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], episode)
         self.writer.add_scalar("Steps/train", self.training_steps[-1], episode)
 
     def write_env_metrics_greedy(self, episode):
+        if not self.writer:
+            return
+
         self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], episode)
         self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
 
     def update_model(self):
+        if self.steps_update_buffer:
+            if self.buffer.experience_count < self.buffer.experiences_per_sampling:
+                return 
+
         if len(self.buffer) < self.batch_size:
             return
 
         sample = self.buffer.sample_batch(self.batch_size)
         self.optimizer.zero_grad()
-        
+
         state = torch.stack([s.state for s in sample])
         next_state = torch.stack([s.next_state for s in sample])
         action_idx = torch.tensor([self.discretizer.get_action_index(s.action)[0] for s in sample], dtype=torch.int64, requires_grad=False).unsqueeze(1)
@@ -117,6 +132,10 @@ class DqnLearning:
             cumulative_reward += reward
 
             if is_train:
+                if self.buffer.type == 'PER':
+                    if (step % self.steps_update_buffer) == 0:
+                        self.buffer.update_memory_sampling()
+
                 state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
                 state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
                 self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
@@ -129,6 +148,9 @@ class DqnLearning:
 
             if (not is_greedy) & is_train:
                 self.epsilon *= self.decay
+
+        if self.buffer.type == 'PER':
+            self.buffer.update_parameters()
 
         return step + 1, cumulative_reward
 

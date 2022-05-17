@@ -3,8 +3,9 @@ from collections import namedtuple
 import random
 import operator
 
+
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward', 'done'))
-Data = namedtuple('Data', ('priority', 'probability', 'weight', 'index'))
+
 
 class Discretizer:
     def __init__(
@@ -80,149 +81,187 @@ class Discretizer:
         return self.min_points_actions + self.spacing_actions / 2 + action_idx * self.spacing_actions
 
 
-class ReplayBuffer(object):
-    def __init__(
-        self,
-        capacity,
-        seed):
+# From OpenAI baselines
+class SegmentTree(object):
+    def __init__(self, capacity, operation, neutral_element):
+        """Build a Segment Tree data structure.
+        https://en.wikipedia.org/wiki/Segment_tree
+        Can be used as regular array, but with two
+        important differences:
+            a) setting item's value is slightly slower.
+                It is O(lg capacity) instead of O(1).
+            b) user has access to an efficient ( O(log segment size) )
+                `reduce` operation which reduces `operation` over
+                a contiguous subsequence of items in the array.
+        Paramters
+        ---------
+        capacity: int
+            Total size of the array - must be a power of two.
+        operation: lambda obj, obj -> obj
+            and operation for combining elements (eg. sum, max)
+            must form a mathematical group together with the set of
+            possible values for array elements (i.e. be associative)
+        neutral_element: obj
+            neutral element for the operation above. eg. float('-inf')
+            for max and 0 for sum.
+        """
+        assert capacity > 0 and capacity & (capacity - 1) == 0, "capacity must be positive and a power of 2."
+        self._capacity = capacity
+        self._value = [neutral_element for _ in range(2 * capacity)]
+        self._operation = operation
 
-        self.capacity = capacity
-        self.position = 0
-        self.memory = []
-        np.random.seed(seed)
-
-        self.type = 'Uniform'
-
-    def push(self, *args):
-        if len(self.memory) < self.capacity:
-            self.memory.append(None)
-        self.memory[self.position] = Transition(*args)
-        self.position = (self.position + 1) % self.capacity
-
-    def sample_batch(self, batch_size):
-        return random.sample(self.memory, batch_size)
-
-    def __len__(self):
-        return len(self.memory)
-
-    def get_buffer_size(self):
-        return len(self.memory)
-
-# Kudos to @Gillaume-Cr
-class PrioritizedReplayBuffer(object):
-    def __init__(self, action_size, buffer_size, batch_size, experiences_per_sampling, seed, compute_weights):
-        self.action_size = action_size
-        self.buffer_size = buffer_size
-        self.batch_size = batch_size
-        self.experiences_per_sampling = experiences_per_sampling
-
-        self.alpha = 0.5
-        self.alpha_decay_rate = 0.99
-        self.beta = 0.5
-        self.beta_growth_rate = 1.001
-        self.seed = random.seed(seed)
-        self.compute_weights = compute_weights
-        self.experience_count = 0
-
-        indexes = []
-        datas = []
-        for i in range(buffer_size):
-            indexes.append(i)
-            d = Data(0, 0, 0, i)
-            datas.append(d)
-
-        self.memory = {key: Transition for key in indexes}
-        self.memory_data = {key: data for key,data in zip(indexes, datas)}
-        self.sampled_batches = []
-        self.current_batch = 0
-        self.priorities_sum_alpha = 0
-        self.priorities_max = 1
-        self.weights_max = 1
-
-        self.type = 'PER'
-
-    def update_priorities(self, tds, indices):
-        for td, index in zip(tds, indices):
-            N = min(self.experience_count, self.buffer_size)
-
-            updated_priority = td[0]
-            if updated_priority > self.priorities_max:
-                self.priorities_max = updated_priority
-            
-            if self.compute_weights:
-                updated_weight = ((N * updated_priority)**(-self.beta))/self.weights_max
-                if updated_weight > self.weights_max:
-                    self.weights_max = updated_weight
+    def _reduce_helper(self, start, end, node, node_start, node_end):
+        if start == node_start and end == node_end:
+            return self._value[node]
+        mid = (node_start + node_end) // 2
+        if end <= mid:
+            return self._reduce_helper(start, end, 2 * node, node_start, mid)
+        else:
+            if mid + 1 <= start:
+                return self._reduce_helper(start, end, 2 * node + 1, mid + 1, node_end)
             else:
-                updated_weight = 1
+                return self._operation(
+                    self._reduce_helper(start, mid, 2 * node, node_start, mid),
+                    self._reduce_helper(mid + 1, end, 2 * node + 1, mid + 1, node_end)
+                )
 
-            old_priority = self.memory_data[index].priority
-            self.priorities_sum_alpha += updated_priority**self.alpha - old_priority**self.alpha
-            updated_probability = td[0]**self.alpha / self.priorities_sum_alpha
-            data = Data(updated_priority, updated_probability, updated_weight, index) 
-            self.memory_data[index] = data
+    def reduce(self, start=0, end=None):
+        """Returns result of applying `self.operation`
+        to a contiguous subsequence of the array.
+            self.operation(arr[start], operation(arr[start+1], operation(... arr[end])))
+        Parameters
+        ----------
+        start: int
+            beginning of the subsequence
+        end: int
+            end of the subsequences
+        Returns
+        -------
+        reduced: obj
+            result of reducing self.operation over the specified range of array elements.
+        """
+        if end is None:
+            end = self._capacity
+        if end < 0:
+            end += self._capacity
+        end -= 1
+        return self._reduce_helper(start, end, 1, 0, self._capacity - 1)
 
-    def update_memory_sampling(self):
-        self.current_batch = 0
-        values = list(self.memory_data.values())
-        random_values = random.choices(
-            self.memory_data,
-            [data.probability for data in values],
-            k=self.experiences_per_sampling
+    def __setitem__(self, idx, val):
+        # index of the leaf
+        idx += self._capacity
+        self._value[idx] = val
+        idx //= 2
+        while idx >= 1:
+            self._value[idx] = self._operation(
+                self._value[2 * idx],
+                self._value[2 * idx + 1]
+            )
+            idx //= 2
+
+    def __getitem__(self, idx):
+        assert 0 <= idx < self._capacity
+        return self._value[self._capacity + idx]
+
+
+# From OpenAI baselines
+class SumSegmentTree(SegmentTree):
+    def __init__(self, capacity):
+        super(SumSegmentTree, self).__init__(
+            capacity=capacity,
+            operation=operator.add,
+            neutral_element=0.0
         )
-        self.sampled_batches = [random_values[i:i + self.batch_size] 
-                                    for i in range(0, len(random_values), self.batch_size)]
 
-    def update_parameters(self):
-        self.alpha *= self.alpha_decay_rate
-        self.beta *= self.beta_growth_rate
-        if self.beta > 1:
-            self.beta = 1
-        N = min(self.experience_count, self.buffer_size)
-        self.priorities_sum_alpha = 0
-        sum_prob_before = 0
-        for element in self.memory_data.values():
-            sum_prob_before += element.probability
-            self.priorities_sum_alpha += element.priority**self.alpha
-        sum_prob_after = 0
-        for element in self.memory_data.values():
-            probability = element.priority**self.alpha/self.priorities_sum_alpha
-            sum_prob_after += probability
-            weight = 1
-            if self.compute_weights:
-                weight = ((N*element.probability)**(-self.beta))/self.weights_max
-            d = Data(element.priority, probability, weight, element.index)
-            self.memory_data[element.index] = d
+    def sum(self, start=0, end=None):
+        """Returns arr[start] + ... + arr[end]"""
+        return super(SumSegmentTree, self).reduce(start, end)
 
-    def push(self, *args):
-        self.experience_count += 1
-        index = self.experience_count % self.buffer_size
+    def find_prefixsum_idx(self, prefixsum):
+        """Find the highest index `i` in the array such that
+            sum(arr[0] + arr[1] + ... + arr[i - i]) <= prefixsum
+        if array values are probabilities, this function
+        allows to sample indexes according to the discrete
+        probability efficiently.
+        Parameters
+        ----------
+        perfixsum: float
+            upperbound on the sum of array prefix
+        Returns
+        -------
+        idx: int
+            highest index satisfying the prefixsum constraint
+        """
+        assert 0 <= prefixsum <= self.sum() + 1e-5
+        idx = 1
+        while idx < self._capacity:  # while non-leaf
+            if self._value[2 * idx] > prefixsum:
+                idx = 2 * idx
+            else:
+                prefixsum -= self._value[2 * idx]
+                idx = 2 * idx + 1
+        return idx - self._capacity
 
-        if self.experience_count > self.buffer_size:
-            temp = self.memory_data[index]
-            self.priorities_sum_alpha -= temp.priority**self.alpha
-            if temp.priority == self.priorities_max:
-                self.memory_data[index].priority = 0
-                self.priorities_max = max(self.memory_data.items(), key=operator.itemgetter(1)).priority
-            if self.compute_weights:
-                if temp.weight == self.weights_max:
-                    self.memory_data[index].weight = 0
-                    self.weights_max = max(self.memory_data.items(), key=operator.itemgetter(2)).weight
 
-        priority = self.priorities_max
-        weight = self.weights_max
-        self.priorities_sum_alpha += priority ** self.alpha
-        probability = priority ** self.alpha / self.priorities_sum_alpha
-        e = Transition(*args)
-        self.memory[index] = e
-        d = Data(priority, probability, weight, index)
-        self.memory_data[index] = d
-            
-    def sample_batch(self, batch_size):
-        sampled_batch = self.sampled_batches[self.current_batch]
-        self.current_batch += 1
-        batch = [self.memory.get(sample.index) for sample in sampled_batch]
-        return batch
+class MinSegmentTree(SegmentTree):
+    def __init__(self, capacity):
+        super(MinSegmentTree, self).__init__(
+            capacity=capacity,
+            operation=min,
+            neutral_element=float('inf')
+        )
+
+    def min(self, start=0, end=None):
+        """Returns min(arr[start], ...,  arr[end])"""
+
+        return super(MinSegmentTree, self).reduce(start, end)
+
+
+# From OpenAI baselines
+class ReplayBuffer(object):
+    def __init__(self, size):
+        """Create Replay buffer.
+        Parameters
+        ----------
+        size: int
+            Max number of transitions to store in the buffer. When the buffer
+            overflows the old memories are dropped.
+        """
+        self._storage = []
+        self._maxsize = size
+        self._next_idx = 0
+        self.type = 'ER'
 
     def __len__(self):
-        return len(self.memory)
+        return len(self._storage)
+
+    def push(self, obs_t, action, obs_tp1, reward, done):
+        data = Transition(obs_t, action, obs_tp1, reward, done)
+
+        if self._next_idx >= len(self._storage):
+            self._storage.append(data)
+        else:
+            self._storage[self._next_idx] = data
+        self._next_idx = (self._next_idx + 1) % self._maxsize
+
+    def sample_batch(self, batch_size):
+        """Sample a batch of experiences.
+        Parameters
+        ----------
+        batch_size: int
+            How many transitions to sample.
+        Returns
+        -------
+        obs_batch: np.array
+            batch of observations
+        act_batch: np.array
+            batch of actions executed given obs_batch
+        rew_batch: np.array
+            rewards received as results of executing act_batch
+        next_obs_batch: np.array
+            next set of observations seen after executing act_batch
+        done_mask: np.array
+            done_mask[i] = 1 if executing act_batch[i] resulted in
+            the end of an episode and 0 otherwise.
+        """
+        return [self._storage[random.randint(0, len(self._storage) - 1)] for _ in range(batch_size)]

@@ -18,7 +18,7 @@ class DqnLearning:
         batch_size,
         decay,
         writer=None,
-        steps_update_buffer=None
+        prioritized_experience=False
     ):
 
         self.env = env
@@ -34,7 +34,7 @@ class DqnLearning:
         self.gamma = gamma
         self.decay = decay
         self.buffer = buffer
-        self.steps_update_buffer = steps_update_buffer
+        self.prioritized_experience = prioritized_experience
         self.batch_size = batch_size
 
         self.training_steps = []
@@ -99,7 +99,11 @@ class DqnLearning:
         if len(self.buffer) < self.batch_size:
             return
 
-        sample = self.buffer.sample_batch(self.batch_size)
+        if self.prioritized_experience:
+            sample, weights, batch_idxes = self.buffer.sample_batch(self.batch_size, 1.0)
+        else:
+            sample = self.buffer.sample_batch(self.batch_size)
+
         self.optimizer.zero_grad()
 
         state = torch.stack([s.state for s in sample])
@@ -113,7 +117,10 @@ class DqnLearning:
         q_next = torch.squeeze(self.model_online.forward(next_state).gather(dim=1, index=action_next_idx))*done_mask
         q_target = reward + self.gamma*q_next
 
-        loss = self.criterion(q, q_target)
+        if self.prioritized_experience:
+            loss = self.criterion(q, q_target, weight=weights)
+        else:
+            loss = self.criterion(q, q_target)
         loss.backward()
         self.optimizer.step()
 
@@ -121,6 +128,12 @@ class DqnLearning:
             p1.data.copy_(.001*p2.data + (1 - .001)*p1.data)
 
         self.write_training_metrics(loss, q_next)
+
+        if self.prioritized_experience:
+            td_error = torch.flatten(q_target - q).tolist()
+            print(td_error)
+            new_priorities = np.abs(td_error) + 1e-6
+            self.buffer.update_priorities(batch_idxes, new_priorities)
 
     def run_episode(self, is_train=True, is_greedy=False):
         state = self.env.reset()
@@ -132,10 +145,6 @@ class DqnLearning:
             cumulative_reward += reward
 
             if is_train:
-                if self.buffer.type == 'PER':
-                    if (step % self.steps_update_buffer) == 0:
-                        self.buffer.update_memory_sampling()
-
                 state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
                 state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
                 self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
@@ -148,9 +157,6 @@ class DqnLearning:
 
             if (not is_greedy) & is_train:
                 self.epsilon *= self.decay
-
-        if self.buffer.type == 'PER':
-            self.buffer.update_parameters()
 
         return step + 1, cumulative_reward
 

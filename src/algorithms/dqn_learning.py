@@ -18,7 +18,8 @@ class DqnLearning:
         batch_size,
         decay,
         writer=None,
-        prioritized_experience=False
+        prioritized_experience=False,
+        l2_penalty=.0
     ):
 
         self.env = env
@@ -46,7 +47,7 @@ class DqnLearning:
 
         self.writer = writer
         self.criterion = torch.nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.model_online.parameters(), lr=alpha)
+        self.optimizer = torch.optim.SGD(self.model_online.parameters(), lr=alpha, weight_decay=l2_penalty)
 
     def get_random_action(self):
         return self.env.action_space.sample()
@@ -91,11 +92,11 @@ class DqnLearning:
         self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], episode)
         self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
 
-    def update_model(self):
-        if self.steps_update_buffer:
-            if self.buffer.experience_count < self.buffer.experiences_per_sampling:
-                return 
+    def weighted_mse_loss(self, input, target, weight):
+        weight = torch.tensor(weight, requires_grad=False, dtype=torch.float32)
+        return torch.sum(weight*(input - target)**2)
 
+    def update_model(self):
         if len(self.buffer) < self.batch_size:
             return
 
@@ -118,7 +119,7 @@ class DqnLearning:
         q_target = reward + self.gamma*q_next
 
         if self.prioritized_experience:
-            loss = self.criterion(q, q_target, weight=weights)
+            loss = self.weighted_mse_loss(q, q_target, weights)
         else:
             loss = self.criterion(q, q_target)
         loss.backward()
@@ -131,7 +132,6 @@ class DqnLearning:
 
         if self.prioritized_experience:
             td_error = torch.flatten(q_target - q).tolist()
-            print(td_error)
             new_priorities = np.abs(td_error) + 1e-6
             self.buffer.update_priorities(batch_idxes, new_priorities)
 

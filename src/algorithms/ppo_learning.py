@@ -2,40 +2,29 @@ import numpy as np
 import torch
 
 
-class DqnLearning:
+class PpoLearning:
     def __init__(
         self,
         env,
-        model_online,
-        model_target,
+        model_actor,
+        model_critic,
         discretizer,
         episodes,
         max_steps,
-        epsilon,
-        alpha,
         gamma,
-        buffer,
-        batch_size,
-        decay,
-        writer=None,
-        prioritized_experience=False,
-        l2_penalty=.0
+        clip_param,
+        writer=None
     ):
 
         self.env = env
-        self.model_online = model_online
-        self.model_target = model_target
+        self.model_actor = model_actor
+        self.model_critic = model_critic
         self.discretizer = discretizer
 
         self.episodes = episodes
         self.max_steps = max_steps
-        self.epsilon = epsilon
-        self.alpha = alpha
         self.gamma = gamma
-        self.decay = decay
-        self.buffer = buffer
-        self.prioritized_experience = prioritized_experience
-        self.batch_size = batch_size
+        self.clip_param = clip_param
 
         self.training_steps = []
         self.training_cumulative_reward = []
@@ -45,65 +34,51 @@ class DqnLearning:
         self.iteration_idx = 0
 
         self.writer = writer
-        self.criterion = torch.nn.MSELoss()
-        #self.optimizer = torch.optim.SGD(self.model_online.parameters(), lr=alpha, weight_decay=l2_penalty)
-        self.optimizer = torch.optim.Adam(self.model_online.parameters(), lr=7e-3)
+        self.criterion_actor = torch.nn.MSELoss()
+        self.criterion_critic = torch.nn.MSELoss()
+        self.optimizer_actor = torch.optim.Adam(self.model_actor.parameters(), lr=7e-3)
+        self.optimizer_critic = torch.optim.Adam(self.model_critic.parameters(), lr=7e-3)
 
-    def get_random_action(self):
-        return self.env.action_space.sample()
-
-    def get_greedy_action(self, state):
+    def get_action(self, state):
         with torch.no_grad():
             state_tensor = torch.tensor(state, dtype=torch.float)
-            q_values = self.model_online.forward(state_tensor)
-            action_idx = q_values.abs().argmax().item()
-        return self.discretizer.get_action_from_index(action_idx)
+            probs = self.model_actor.forward(state_tensor)
+            action_idx = np.random.random_sample(probs)
+        return self.discretizer.get_action_from_index(action_idx), probs
 
-    def choose_action(self, state):
-        if np.random.rand() < self.epsilon:
-            return self.get_random_action()
-        return self.get_greedy_action(state)
+    def update_actor(
+        self,
+        states,
+        actions,
+        rewards,
+        dones,
+        values
+    ):
+        g = 0
+        lmbda = 0.95
+        returns = []
+        for i in reversed(range(len(rewards))):
+            delta = rewards[i] + self.gamma*values[i + 1]*(1 - dones[i]) - values[i]
+            g = delta + self.gamma* lmbda*(1 - dones[i])*g
+            returns.append(g + values[i])
 
-    def write_training_metrics(self, loss, q):
-        if not self.writer:
-            return
+        returns.reverse()
+        adv = np.array(returns, dtype=np.float32) - values[:-1]
+        adv = (adv - np.mean(adv)) / (np.std(adv) + 1e-10)
+        states = np.array(states, dtype=np.float32)
+        actions = np.array(actions, dtype=np.int32)
+        returns = np.array(returns, dtype=np.float32)
+        return states, actions, returns, adv
 
-        if (self.iteration_idx % 10000) == 0:
-            for tag, value in self.model_online.named_parameters():
-                if value.grad is not None:
-                    self.writer.add_histogram(tag + "/grad", value.grad.cpu(), self.iteration_idx)
-                    self.writer.add_histogram(tag + "/weight", value, self.iteration_idx)
-
-        self.writer.add_scalar("Loss/train", loss, self.iteration_idx)
-        self.writer.add_histogram("Q/train", q, self.iteration_idx)
-        self.iteration_idx += 1
-
-    def write_env_metrics_train(self, episode):
-        if not self.writer:
-            return
-
-        self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], episode)
-        self.writer.add_scalar("Steps/train", self.training_steps[-1], episode)
-
-    def write_env_metrics_greedy(self, episode):
-        if not self.writer:
-            return
-
-        self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], episode)
-        self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
-
-    def weighted_mse_loss(self, input, target, weight):
-        weight = torch.tensor(weight, requires_grad=False, dtype=torch.float32)
-        return torch.sum(weight*(input - target)**2)
-
-    def update_model(self):
-        if len(self.buffer) < self.batch_size:
-            return
-
-        if self.prioritized_experience:
-            sample, weights, batch_idxes = self.buffer.sample_batch(self.batch_size, 1.0)
-        else:
-            sample = self.buffer.sample_batch(self.batch_size)
+    def update_models(
+        self,
+        states,
+        rewards,
+        actions,
+        probs,
+        dones,
+        values
+    ):
 
         self.optimizer.zero_grad()
 
@@ -139,24 +114,36 @@ class DqnLearning:
         state = self.env.reset()
         cumulative_reward = 0
 
+        states, rewards, actions, probs, dones, values = [], [], [], [], [], []
+
         for step in range(self.max_steps):
-            action = self.get_greedy_action(state) if is_greedy else self.choose_action(state)
+            action, p = self.get_action(state)
+            value = self.model_critic(state)
+
             state_prime, reward, done, _ = self.env.step(action)
             cumulative_reward += reward
 
-            if is_train:
-                state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
-                state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
-                self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
-                self.update_model()
+            states.append(state)
+            rewards.append(reward)
+            actions.append(action)
+            probs.append(p)
+            dones.append(done)
+            values.append(value)
 
             if done:
                 break
 
             state = state_prime
 
-            if (not is_greedy) & is_train:
-                self.epsilon *= self.decay
+        if is_train:
+            self.update_models(
+                states,
+                rewards,
+                actions,
+                probs,
+                dones,
+                values
+            )
 
         return step + 1, cumulative_reward
 

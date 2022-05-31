@@ -11,11 +11,9 @@ class Actor(torch.nn.Module):
             self.layers.append(torch.nn.ReLU())
             input_size = size
         self.output_layer = torch.nn.Linear(input_size, output_size)
-        self.output_activation = torch.nn.Softmax()
 
     def forward(self, input_data):
         for layer in self.layers:
             input_data = layer(input_data)
-        output_data = self.output_layer(input_data)
-        logits = self.output_activation(output_data)
+        logits = self.output_layer(input_data)
         return logits

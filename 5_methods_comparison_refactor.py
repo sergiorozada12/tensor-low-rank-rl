@@ -29,4 +29,4 @@ if __name__ == "__main__":
         if name in experiments_done:
             continue
         experiment = Experiment(name, env_mountaincar, 1)
-        experiment.run_experiments(window=70)
+        experiment.run_experiments(window=100)

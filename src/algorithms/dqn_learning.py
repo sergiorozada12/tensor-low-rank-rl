@@ -19,7 +19,6 @@ class DqnLearning:
         decay,
         writer=None,
         prioritized_experience=False,
-        l2_penalty=.0
     ):
 
         self.env = env
@@ -46,8 +45,7 @@ class DqnLearning:
 
         self.writer = writer
         self.criterion = torch.nn.MSELoss()
-        #self.optimizer = torch.optim.SGD(self.model_online.parameters(), lr=alpha, weight_decay=l2_penalty)
-        self.optimizer = torch.optim.Adam(self.model_online.parameters(), lr=7e-3)
+        self.optimizer = torch.optim.Adam(self.model_online.parameters(), lr=alpha)
 
     def get_random_action(self):
         return self.env.action_space.sample()

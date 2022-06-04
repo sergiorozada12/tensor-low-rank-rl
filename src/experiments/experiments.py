@@ -90,18 +90,27 @@ class Experiment:
         ) for _ in range(self.nodes)]
 
     def _get_dqn_models(self):
-        model = Mlp(
+        model_online = Mlp(
             len(self.parameters['bucket_states']),
             self.parameters['arch'],
             self.discretizer.n_actions[0]
         )
+
+        model_target = Mlp(
+            len(self.parameters['bucket_states']),
+            self.parameters['arch'],
+            self.discretizer.n_actions[0]
+        )
+
+        model_target.load_state_dict(model_online.state_dict())
 
         buffer = ReplayBuffer(self.parameters['buffer_size'], 0)
 
         return [DqnLearning(
             env=self.env,
             discretizer=self.discretizer,
-            model=model,
+            model_online=model_online,
+            model_target=model_target,
             buffer=buffer,
             batch_size=self.parameters['batch_size'],
             episodes=self.parameters['episodes'],

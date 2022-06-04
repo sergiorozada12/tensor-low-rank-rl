@@ -11,7 +11,7 @@ from src.algorithms.dqn_learning import DqnLearning
 from src.algorithms.mlr_learning import MatrixLowRankLearning
 from src.algorithms.tlr_learning import TensorLowRankLearning
 
-from src.utils.utils import Discretizer, ReplayBuffer
+from src.utils.utils import Discretizer, PrioritizedReplayBuffer, ReplayBuffer
 
 
 class Experiment:
@@ -104,7 +104,10 @@ class Experiment:
 
         model_target.load_state_dict(model_online.state_dict())
 
-        buffer = ReplayBuffer(self.parameters['buffer_size'], 0)
+        if self.parameters['prioritized_experience']:
+            buffer = PrioritizedReplayBuffer(self.parameters['buffer_size'], 1.0)
+        else:
+            buffer = ReplayBuffer(self.parameters['buffer_size'])
 
         return [DqnLearning(
             env=self.env,
@@ -119,6 +122,7 @@ class Experiment:
             alpha=self.parameters['alpha'],
             gamma=self.parameters['gamma'],
             decay=self.parameters['decay'],
+            prioritized_experience=self.parameters['prioritized_experience'],
         ) for _ in range(self.nodes)]
 
     @staticmethod

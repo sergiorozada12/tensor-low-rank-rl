@@ -14,5 +14,6 @@
     "decay": 0.999999,
     "buffer_size": 10000,
     "batch_size": 32,
-    "arch": [100]
+    "arch": [100],
+    "prioritized_experience": false
 }

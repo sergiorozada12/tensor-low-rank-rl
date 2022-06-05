@@ -6,7 +6,7 @@
     "min_points_actions": [-1.0],
     "max_points_actions": [1.0],
     "bucket_actions": [10],
-    "episodes": 100000,
+    "episodes": 10000,
     "max_steps": 10000,
     "epsilon": 1.0,
     "alpha": 0.1,

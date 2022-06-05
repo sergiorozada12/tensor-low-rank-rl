@@ -95,7 +95,7 @@ class DqnLearning:
         return torch.sum(weight*(input - target)**2)
 
     def update_model(self):
-        if len(self.buffer) < self.batch_size:
+        if len(self.buffer) <= self.batch_size:
             return
 
         if self.prioritized_experience:

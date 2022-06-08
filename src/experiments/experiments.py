@@ -77,6 +77,7 @@ class Experiment:
         ) for _ in range(self.nodes)]
 
     def _get_tlr_models(self):
+        bias = self.parameters.get('bias', 0.0)
         return [TensorLowRankLearning(
             env=self.env,
             discretizer=self.discretizer,
@@ -86,7 +87,8 @@ class Experiment:
             alpha=self.parameters['alpha'],
             gamma=self.parameters['gamma'],
             decay=self.parameters['decay'],
-            k=self.parameters['k']
+            k=self.parameters['k'],
+            bias=bias
         ) for _ in range(self.nodes)]
 
     def _get_dqn_models(self):

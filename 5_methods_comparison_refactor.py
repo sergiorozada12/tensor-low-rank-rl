@@ -10,7 +10,11 @@ from src.experiments.experiments import Experiment
 env_pendulum = CustomPendulumEnv()
 env_cartpole = CustomContinuousCartPoleEnv()
 env_mountaincar = CustomContinuous_MountainCarEnv()
-env_goddard = CustomGoddardEnv()
+env_rocket = CustomGoddardEnv()
+
+
+N_NODES = 1
+
 
 if __name__ == "__main__":
     # Pendulum
@@ -19,7 +23,7 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        experiment = Experiment(name, env_pendulum, 1)
+        experiment = Experiment(name, env_pendulum, N_NODES)
         experiment.run_experiments(window=70)
 
     # Cartpole
@@ -28,7 +32,7 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        experiment = Experiment(name, env_mountaincar, 1)
+        experiment = Experiment(name, env_cartpole, N_NODES)
         experiment.run_experiments(window=500)
 
     # Mountaincar
@@ -37,5 +41,14 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        experiment = Experiment(name, env_mountaincar, 1)
+        experiment = Experiment(name, env_mountaincar, N_NODES)
         experiment.run_experiments(window=100)
+
+    # Rocket
+    experiments = [f for f in os.listdir('parameters') if 'rocket' in f]
+    experiments_done = [f for f in os.listdir('results') if 'rocket' in f]
+    for name in experiments:
+        if name in experiments_done:
+            continue
+        experiment = Experiment(name, env_rocket, N_NODES)
+        experiment.run_experiments(window=50)

@@ -13,7 +13,7 @@ env_mountaincar = CustomContinuous_MountainCarEnv()
 env_rocket = CustomGoddardEnv()
 
 
-N_NODES = 1
+N_NODES = 100
 
 
 if __name__ == "__main__":
@@ -26,6 +26,7 @@ if __name__ == "__main__":
         experiment = Experiment(name, env_pendulum, N_NODES)
         experiment.run_experiments(window=70)
 
+"""
     # Cartpole
     experiments = [f for f in os.listdir('parameters') if 'cartpole' in f]
     experiments_done = [f for f in os.listdir('results') if 'cartpole' in f]
@@ -52,3 +53,4 @@ if __name__ == "__main__":
             continue
         experiment = Experiment(name, env_rocket, N_NODES)
         experiment.run_experiments(window=50)
+"""

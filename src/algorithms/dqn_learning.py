@@ -180,8 +180,6 @@ class DqnLearning:
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
             for episode in range(self.episodes):
-                if episode % 1000 == 0:
-                    print(episode)
                 self.run_training_episode()
                 self.write_env_metrics_train(episode)
 

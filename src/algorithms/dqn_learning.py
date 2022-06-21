@@ -2,6 +2,9 @@ import numpy as np
 import torch
 
 
+torch.set_num_threads(1)
+
+
 class DqnLearning:
     def __init__(
         self,
@@ -46,6 +49,9 @@ class DqnLearning:
         self.writer = writer
         self.criterion = torch.nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.model_online.parameters(), lr=alpha)
+
+        self.model_online
+        self.model_target
 
     def get_random_action(self):
         return self.env.action_space.sample()
@@ -174,6 +180,8 @@ class DqnLearning:
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
             for episode in range(self.episodes):
+                if episode % 1000 == 0:
+                    print(episode)
                 self.run_training_episode()
                 self.write_env_metrics_train(episode)
 

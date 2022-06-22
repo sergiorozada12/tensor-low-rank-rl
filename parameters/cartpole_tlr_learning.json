@@ -9,7 +9,7 @@
     "episodes": 40000,
     "max_steps": 100,
     "epsilon": 0.4,
-    "alpha": 0.01,
+    "alpha": 0.005,
     "gamma": 0.9,
     "decay": 0.999999,
     "k": 10

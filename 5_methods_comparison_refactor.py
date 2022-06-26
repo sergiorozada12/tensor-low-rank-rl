@@ -35,17 +35,17 @@ if __name__ == "__main__":
         experiment = Experiment(name, env_cartpole, N_NODES)
         experiment.run_experiments(window=500)
 
-    """
-
     # Mountaincar
     experiments = [f for f in os.listdir('parameters') if 'mountaincar' in f]
     experiments_done = [f for f in os.listdir('results') if 'mountaincar' in f]
     for name in experiments:
         if name in experiments_done:
             continue
+        print(name)
         experiment = Experiment(name, env_mountaincar, N_NODES)
         experiment.run_experiments(window=100)
 
+"""
     # Rocket
     experiments = [f for f in os.listdir('parameters') if 'rocket' in f]
     experiments_done = [f for f in os.listdir('results') if 'rocket' in f]

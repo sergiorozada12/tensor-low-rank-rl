@@ -58,7 +58,7 @@ class DqnLearning:
 
     def get_greedy_action(self, state):
         with torch.no_grad():
-            state_tensor = torch.tensor(state, dtype=torch.float)
+            state_tensor = torch.as_tensor(state, dtype=torch.float)
             q_values = self.model_online.forward(state_tensor)
             action_idx = q_values.abs().argmax().item()
         return self.discretizer.get_action_from_index(action_idx)
@@ -97,7 +97,7 @@ class DqnLearning:
         self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
 
     def weighted_mse_loss(self, input, target, weight):
-        weight = torch.tensor(weight, requires_grad=False, dtype=torch.float32)
+        weight = torch.as_tensor(weight, dtype=torch.float32)
         return torch.sum(weight*(input - target)**2)
 
     def update_model(self):
@@ -109,13 +109,14 @@ class DqnLearning:
         else:
             sample = self.buffer.sample_batch(self.batch_size)
 
-        self.optimizer.zero_grad()
+        for param in self.model_online.parameters():
+            param.grad = None
 
         state = torch.stack([s.state for s in sample])
         next_state = torch.stack([s.next_state for s in sample])
-        action_idx = torch.tensor([self.discretizer.get_action_index(s.action)[0] for s in sample], dtype=torch.int64, requires_grad=False).unsqueeze(1)
-        reward = torch.tensor([s.reward for s in sample], dtype=torch.float32, requires_grad=False)
-        done_mask = torch.tensor([0 if s.done else 1 for s in sample], dtype=torch.float32, requires_grad=False)
+        action_idx = torch.as_tensor([self.discretizer.get_action_index(s.action)[0] for s in sample], dtype=torch.int64).unsqueeze(1)
+        reward = torch.as_tensor([s.reward for s in sample], dtype=torch.float32)
+        done_mask = torch.as_tensor([0 if s.done else 1 for s in sample], dtype=torch.float32)
 
         q = torch.squeeze(self.model_online.forward(state).gather(1, action_idx))
         _, action_next_idx = self.model_target.forward(next_state).max(dim=1, keepdim=True)
@@ -180,6 +181,7 @@ class DqnLearning:
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
             for episode in range(self.episodes):
+                print(episode)
                 self.run_training_episode()
                 self.write_env_metrics_train(episode)
 

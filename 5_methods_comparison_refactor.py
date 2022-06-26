@@ -13,7 +13,7 @@ env_mountaincar = CustomContinuous_MountainCarEnv()
 env_rocket = CustomGoddardEnv()
 
 
-N_NODES = 100
+N_NODES = 1
 
 
 if __name__ == "__main__":

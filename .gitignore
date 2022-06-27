@@ -1,3 +1,4 @@
+*.out
 *.ipynb
 results/
 runs/

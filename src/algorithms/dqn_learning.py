@@ -181,9 +181,15 @@ class DqnLearning:
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
             for episode in range(self.episodes):
-                print(episode)
                 self.run_training_episode()
+                print(episode, self.training_steps[-1], self.training_cumulative_reward[-1])
                 self.write_env_metrics_train(episode)
+
+                if episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:
+                    self.greedy_cumulative_reward = [self.greedy_cumulative_reward[-1]]*self.episodes
+                    self.greedy_steps = [self.greedy_steps[-1]]*self.episodes
+                    break
+
 
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()

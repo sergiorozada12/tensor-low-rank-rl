@@ -41,11 +41,9 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        print(name)
         experiment = Experiment(name, env_mountaincar, N_NODES)
         experiment.run_experiments(window=100)
 
-"""
     # Rocket
     experiments = [f for f in os.listdir('parameters') if 'rocket' in f]
     experiments_done = [f for f in os.listdir('results') if 'rocket' in f]
@@ -54,4 +52,3 @@ if __name__ == "__main__":
             continue
         experiment = Experiment(name, env_rocket, N_NODES)
         experiment.run_experiments(window=50)
-"""

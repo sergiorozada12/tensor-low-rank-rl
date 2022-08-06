@@ -133,13 +133,16 @@ class Experiment:
         return learner
 
     def run_experiments(self, window):
-        with Pool(self.nodes) as pool:
+        """with Pool(self.nodes) as pool:
             models_1 = pool.map(self.run_experiment, self.models[:50])
 
         with Pool(self.nodes) as pool:
             models_2 = pool.map(self.run_experiment, self.models[50:])
         
-        models = models_1 + models_2
+        models = models_1 + models_2"""
+
+        with Pool(self.nodes) as pool:
+            models = pool.map(self.run_experiment, self.models)
 
         steps = np.median([pd.Series(learner.greedy_steps).rolling(window).median() for learner in models], axis=0)
         rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in models])

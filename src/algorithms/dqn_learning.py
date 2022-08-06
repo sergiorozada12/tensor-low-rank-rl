@@ -182,7 +182,8 @@ class DqnLearning:
         if run_greedy_frequency:
             for episode in range(self.episodes):
                 self.run_training_episode()
-                print(episode, self.training_steps[-1], self.training_cumulative_reward[-1])
+                if episode % 1000 == 0:
+                    print(episode, self.training_steps[-1], self.training_cumulative_reward[-1])
                 self.write_env_metrics_train(episode)
 
                 if episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:

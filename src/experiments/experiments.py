@@ -1,4 +1,7 @@
+import os
 import json
+import pickle
+
 from pathos.multiprocessing import ProcessingPool as Pool
 
 import numpy as np
@@ -15,7 +18,7 @@ from src.utils.utils import Discretizer, PrioritizedReplayBuffer, ReplayBuffer
 
 
 class Experiment:
-    def __init__(self, name, env, nodes):
+    def __init__(self, name, env, nodes, recover=False):
         self.env = env
         self.nodes = nodes
         self.name = name
@@ -24,7 +27,11 @@ class Experiment:
             self.parameters = json.load(f)
 
         self.discretizer = self._get_discretizer()
-        self.models = self._get_models()
+
+        if recover:
+            self.models = self._get_models_from_checkpoints()
+        else:
+            self.models = self._get_models()
 
     def _get_discretizer(self):
         states_structure = self.parameters.get('states_structure', None)
@@ -50,6 +57,23 @@ class Experiment:
         elif self.parameters['type'] == 'dqn-model':
             return self._get_dqn_models()
         return None
+
+    def _get_models_from_checkpoints(self):
+        models = []
+        for path in os.listdir('nn_checkpoints'):
+
+            with open(os.path.join('nn_checkpoints', path), 'r') as f:
+                model = pickle.load(f)
+
+            if len(model.training_steps) > len(model.greedy_steps):
+                model.training_steps.pop()
+                model.training_cumulative_reward.pop()
+            elif len(model.training_steps) > model.episode:
+                model.episode += 1
+
+            models.append(model)
+
+            os.remove(os.path.join('nn_checkpoints', path))
 
     def _get_q_models(self):
         return [QLearning(

@@ -1,3 +1,6 @@
+import os
+import pickle
+
 import numpy as np
 import torch
 
@@ -45,6 +48,7 @@ class DqnLearning:
         self.greedy_cumulative_reward = []
 
         self.iteration_idx = 0
+        self.episode = 0
 
         self.writer = writer
         self.criterion = torch.nn.MSELoss()
@@ -82,19 +86,19 @@ class DqnLearning:
         self.writer.add_histogram("Q/train", q, self.iteration_idx)
         self.iteration_idx += 1
 
-    def write_env_metrics_train(self, episode):
+    def write_env_metrics_train(self):
         if not self.writer:
             return
 
-        self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], episode)
-        self.writer.add_scalar("Steps/train", self.training_steps[-1], episode)
+        self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], self.episode)
+        self.writer.add_scalar("Steps/train", self.training_steps[-1], self.episode)
 
-    def write_env_metrics_greedy(self, episode):
+    def write_env_metrics_greedy(self):
         if not self.writer:
             return
 
-        self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], episode)
-        self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], episode)
+        self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], self.episode)
+        self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], self.episode)
 
     def weighted_mse_loss(self, input, target, weight):
         weight = torch.as_tensor(weight, dtype=torch.float32)
@@ -180,26 +184,32 @@ class DqnLearning:
 
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
-            for episode in range(self.episodes):
+            while self.episode < self.episodes:
                 self.run_training_episode()
-                if episode % 1000 == 0:
-                    print(episode, self.training_steps[-1], self.training_cumulative_reward[-1])
-                self.write_env_metrics_train(episode)
+                if self.episode % 1000 == 0:
+                    self.save_checkpoint()
+                    print(self.episode, self.training_steps[-1], self.training_cumulative_reward[-1])
+                self.write_env_metrics_train()
 
-                if episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:
+                if self.episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:
                     self.greedy_cumulative_reward = [self.greedy_cumulative_reward[-1]]*self.episodes
                     self.greedy_steps = [self.greedy_steps[-1]]*self.episodes
                     break
 
-
-                if (episode % run_greedy_frequency) == 0:
+                if (self.episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
-                    self.write_env_metrics_greedy(episode)
+                    self.write_env_metrics_greedy()
+
+                self.episode += 1
 
         else:
             for _ in range(self.episodes):
                 self.run_training_episode()
-                self.write_env_metrics(episode)
+                self.write_env_metrics(self.episode)
 
         if self.writer:
             self.writer.flush()
+
+    def save_checkpoint(self):
+        with open(f'nn_checkpoints/dqn_learner_{os.getpid()}.pck', 'wb') as f:
+            pickle.dump(self, f)

@@ -1,11 +1,18 @@
-import numpy as np
-from collections import namedtuple
+from dataclasses import dataclass
 import random
 import operator
 
+import numpy as np
+import torch
 
-TransitionDqn = namedtuple('Transition', ('state', 'action', 'next_state', 'reward', 'done'))
-TransitionPpo = namedtuple('Transition', ('state', 'action', 'next_state', 'reward', 'done', 'probs', 'value'))
+
+@dataclass
+class Transition:
+    state: torch.Tensor
+    action: np.array
+    next_state: torch.Tensor
+    reward: float
+    done: bool
 
 class Discretizer:
     def __init__(
@@ -219,7 +226,7 @@ class MinSegmentTree(SegmentTree):
 
 # From OpenAI baselines
 class ReplayBuffer(object):
-    def __init__(self, size, ppo=False):
+    def __init__(self, size):
         """Create Replay buffer.
         Parameters
         ----------
@@ -230,16 +237,12 @@ class ReplayBuffer(object):
         self._storage = []
         self._maxsize = size
         self._next_idx = 0
-        self.ppo = ppo
 
     def __len__(self):
         return len(self._storage)
 
     def push(self, *args):
-        if self.ppo:
-            data = TransitionPpo(*args)
-        else:
-            data = TransitionDqn(*args)
+        data = Transition(*args)
 
         if self._next_idx >= len(self._storage):
             self._storage.append(data)

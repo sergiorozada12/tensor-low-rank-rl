@@ -174,3 +174,6 @@ class Experiment:
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(data, f)
+
+        for path in os.listdir('nn_checkpoints'):
+            os.remove(os.path.join('nn_checkpoints', path))

@@ -48,8 +48,7 @@ if __name__ == "__main__":
     experiments = [f for f in os.listdir('parameters') if 'rocket' in f]
     experiments_done = [f for f in os.listdir('results') if 'rocket' in f]
     for name in experiments:
-        print(name)
-        if name in experiments_done or 'dqn_learning_small' not in name:
+        if name in experiments_done:
             continue
         experiment = Experiment(name, env_rocket, N_NODES)
         experiment.run_experiments(window=50)

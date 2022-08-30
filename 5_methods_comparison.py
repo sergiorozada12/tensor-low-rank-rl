@@ -134,7 +134,7 @@ tlr_learners = [
         k=4
     ) for _ in range(NODES)]
 
-"""with Pool(NODES) as pool:
+with Pool(NODES) as pool:
     q_learners_low_trained = pool.map(run_experiment, q_learners_low)
 
 with Pool(NODES) as pool:
@@ -144,30 +144,29 @@ with Pool(NODES) as pool:
     mlr_learners_trained = pool.map(run_experiment, mlr_learners)
 
 with Pool(NODES) as pool:
-    tlr_learners_trained = pool.map(run_experiment, tlr_learners)"""
+    tlr_learners_trained = pool.map(run_experiment, tlr_learners)
 
 with Pool(NODES) as pool:
     dqn_learners_low_trained = pool.map(run_experiment, dqn_learners_low)
 
 N = 70
 
-#pend_steps_q_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_low_trained], axis=0)
-#pend_steps_q_high = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_high_trained], axis=0)
-#pend_steps_mlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in mlr_learners_trained], axis=0)
-#pend_steps_tlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in tlr_learners_trained], axis=0)
+pend_steps_q_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_low_trained], axis=0)
+pend_steps_q_high = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_high_trained], axis=0)
+pend_steps_mlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in mlr_learners_trained], axis=0)
+pend_steps_tlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in tlr_learners_trained], axis=0)
 pend_steps_dqn_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in dqn_learners_low_trained], axis=0)
 
 
-#pend_reward_q_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_low_trained])
-#pend_reward_q_high = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_high_trained])
-#pend_reward_mlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in mlr_learners_trained])
-#pend_reward_tlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in tlr_learners_trained])
+pend_reward_q_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_low_trained])
+pend_reward_q_high = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_high_trained])
+pend_reward_mlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in mlr_learners_trained])
+pend_reward_tlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in tlr_learners_trained])
 pend_reward_dqn_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in dqn_learners_low_trained])
 
-print(pend_reward_dqn_low)
 print("Pendulum Done")
 
-"""
+
 # Cartpole
 env = CustomContinuousCartPoleEnv()
 
@@ -538,4 +537,3 @@ with plt.style.context(['science'], ['ieee']):
     plt.tight_layout()
 
     fig.savefig('figures/fig_5.jpg', ddpi=300)
-"""

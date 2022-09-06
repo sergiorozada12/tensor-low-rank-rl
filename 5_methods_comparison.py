@@ -1,539 +1,205 @@
-from multiprocess import Pool
+import os
+import json
 
-import numpy as np
-import pandas as pd
-import matplotlib
 import matplotlib.pyplot as plt
-
-from src.models.mlp import Mlp
-
-from src.algorithms.q_learning import QLearning
-from src.algorithms.dqn_learning import DqnLearning
-from src.algorithms.mlr_learning import MatrixLowRankLearning
-from src.algorithms.tlr_learning import TensorLowRankLearning
+import matplotlib
 
 from src.environments.pendulum import CustomPendulumEnv
 from src.environments.cartpole import CustomContinuousCartPoleEnv
 from src.environments.mountaincar import CustomContinuous_MountainCarEnv
 from src.environments.goddard import CustomGoddardEnv
 
-from src.utils.utils import Discretizer, ReplayBuffer
+from src.experiments.experiments import Experiment
+
+env_pendulum = CustomPendulumEnv()
+env_cartpole = CustomContinuousCartPoleEnv()
+env_mountaincar = CustomContinuous_MountainCarEnv()
+env_rocket = CustomGoddardEnv()
+
+
+N_NODES = 100
+
+
+if __name__ == "__main__":
+    # Pendulum
+    """experiments = [f for f in os.listdir('parameters') if 'pendulum' in f]
+    experiments_done = [f for f in os.listdir('results') if 'pendulum' in f]
+    for name in experiments:
+        if name in experiments_done:
+            continue
+        experiment = Experiment(name, env_pendulum, N_NODES)
+        experiment.run_experiments(window=70)
+
+    # Cartpole
+    experiments = [f for f in os.listdir('parameters') if 'cartpole' in f]
+    experiments_done = [f for f in os.listdir('results') if 'cartpole' in f]
+    for name in experiments:
+        if name in experiments_done:
+            continue
+        experiment = Experiment(name, env_cartpole, N_NODES)
+        experiment.run_experiments(window=500)
+
+    # Mountaincar
+    experiments = [f for f in os.listdir('parameters') if 'mountaincar' in f]
+    experiments_done = [f for f in os.listdir('results') if 'mountaincar' in f]
+    for name in experiments:
+        if name in experiments_done:
+            continue
+        experiment = Experiment(name, env_mountaincar, N_NODES)
+        experiment.run_experiments(window=100)
+
+    # Rocket
+    experiments = [f for f in os.listdir('parameters') if 'rocket' in f]
+    experiments_done = [f for f in os.listdir('results') if 'rocket' in f]
+    for name in experiments:
+        if name in experiments_done:
+            continue
+        experiment = Experiment(name, env_rocket, N_NODES)
+        experiment.run_experiments(window=50)"""
+
+    paths_pendulum = [f for f in os.listdir('results') if 'pendulum' in f]
+    paths_cartpole = [f for f in os.listdir('results') if 'cartpole' in f]
+    paths_mountaincar = [f for f in os.listdir('results') if 'mountaincar' in f]
+    paths_rocket = [f for f in os.listdir('results') if 'rocket' in f]
+
+    labels = [
+        "Q-lear. low",
+        "Q-lear. high",
+        "MLR-lear.",
+        "TLR-lear.",
+        "DQN-lear. sm.",
+        "DQN-lear. la."
+    ]
+
+    #with plt.style.context(['science'], ['ieee']):
+    with plt.style.context(['ieee']):
+        matplotlib.rcParams.update({'font.size': 18})
+
+        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8, 7))
+        axes = axes.flatten()
+
+        prefix = 'results/pendulum_'
+        axes[0].plot(json.load(open(prefix + 'q_learning_low.json', 'r'))['steps'], color='b')
+        axes[0].plot(json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
+        axes[0].plot(json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
+        axes[0].plot(json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
+        axes[0].plot(json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
+        axes[0].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[0].set_xlabel("Episodes", labelpad=4)
+        axes[0].set_ylabel("(a) $\# Steps$")
+        axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+        axes[0].set_xlim(0, 5000)
+        axes[0].legend(labels, fontsize=12)
+        axes[0].grid()
+
+        prefix = 'results/cartpole_'
+        axes[1].plot(json.load(open(prefix + 'q_learning_low.json', 'r'))['steps'], color='b')
+        axes[1].plot(json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
+        axes[1].plot(json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
+        axes[1].plot(json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
+        axes[1].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[1].set_xlabel("Episodes", labelpad=4)
+        axes[1].set_ylabel("(a) $\# Steps$")
+        axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+        axes[1].set_xlim(0, 40000)
+        axes[1].legend([l for l in labels if 'sm.' not in l], fontsize=12)
+        axes[1].grid()
+
+        prefix = 'results/mountaincar_'
+        axes[2].plot(json.load(open(prefix + 'q_learning_low.json', 'r'))['steps'], color='b')
+        axes[2].plot(json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
+        axes[2].plot(json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
+        axes[2].plot(json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
+        axes[2].plot(json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
+        axes[2].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[2].set_xlabel("Episodes", labelpad=4)
+        axes[2].set_ylabel("(a) $\# Steps$")
+        axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+        axes[2].set_xlim(0, 5000)
+        axes[2].legend(labels, fontsize=12)
+        axes[2].grid()
+
+        prefix = 'results/rocket_'
+        axes[3].plot(json.load(open(prefix + 'q_learning_low.json', 'r'))['steps'], color='b')
+        axes[3].plot(json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
+        axes[3].plot(json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
+        axes[3].plot(json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
+        axes[3].plot(json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
+        axes[3].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[3].set_xlabel("Episodes", labelpad=4)
+        axes[3].set_ylabel("(a) $\# Steps$")
+        axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+        axes[3].set_ylim(180, 500)
+        axes[3].set_xlim(0, 500000)
+        axes[3].legend(labels, fontsize=12)
+        axes[3].grid()
+
+        plt.tight_layout()
+        fig.savefig('figures/fig_5.jpg', ddpi=300)
+
+
+    with plt.style.context(['ieee']):
+        matplotlib.rcParams.update({'font.size': 18})
+
+        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=[8, 7])
+        axes = axes.flatten()
+
+        prefix = 'results/pendulum_'
+        rewards = [
+            json.load(open(prefix + 'q_learning_low.json', 'r'))['rewards'],
+            json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
+            json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['rewards'],
+            json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+        ]
+        axes[0].bar(labels, rewards, color='b')
+        axes[0].set_ylabel("Cumm. Reward")
+        axes[0].set_xticklabels(labels, rotation = 90, size=10)
+        axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+
+        prefix = 'results/cartpole_'
+        rewards = [
+            json.load(open(prefix + 'q_learning_low.json', 'r'))['rewards'],
+            json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
+            json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+        ]
+        axes[1].bar([l for l in labels if 'sm.' not in l], rewards, color='b')
+        axes[1].set_ylabel("Cumm. Reward")
+        axes[1].set_xticklabels([l for l in labels if 'sm.' not in l], rotation = 90, size=10)
+        axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+
+        prefix = 'results/mountaincar_'
+        rewards = [
+            json.load(open(prefix + 'q_learning_low.json', 'r'))['rewards'],
+            json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
+            json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['rewards'],
+            json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+        ]
+        axes[2].bar(labels, rewards, color='b')
+        axes[2].set_ylabel("Cumm. Reward")
+        axes[2].set_xticklabels(labels, rotation = 90, size=10)
+        axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+
+        prefix = 'results/rocket_'
+        rewards = [
+            json.load(open(prefix + 'q_learning_low.json', 'r'))['rewards'],
+            json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
+            json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
+            json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['rewards'],
+            json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+        ]
+        axes[3].bar(labels, rewards, color='b')
+        axes[3].set_ylabel("Cumm. Reward")
+        axes[3].set_xticklabels([l for l in labels if 'la.' not in l], rotation = 90, size=10)
+        axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+
+        plt.tight_layout()
+
+        fig.savefig('figures/fig_6.jpg', dpi=300)
 
-NODES = 1
-
-def run_experiment(learner):
-    learner.train(run_greedy_frequency=1)
-    return learner
-
-# Pendulum
-
-env = CustomPendulumEnv()
-
-discretizer_low = Discretizer(
-    min_points_states=[-1, -5],
-    max_points_states=[1, 5],
-    bucket_states=[20, 20],
-    min_points_actions=[-2],
-    max_points_actions=[2],
-    bucket_actions=[2]
-)
-
-discretizer_high = Discretizer(
-    min_points_states=[-1, -5],
-    max_points_states=[1, 5],
-    bucket_states=[20, 20],
-    min_points_actions=[-2],
-    max_points_actions=[2],
-    bucket_actions=[20]
-)
-
-nn_low = Mlp(2, 100, discretizer_low.n_actions[0])
-nn_high = Mlp(2, 100, discretizer_high.n_actions[0])
-buffer_low = ReplayBuffer(1_000_000, 0)
-buffer_high = ReplayBuffer(1_000_000, 0)
-
-q_learners_low = [QLearning(
-    env=env,
-    discretizer=discretizer_low,
-    episodes=5000,
-    max_steps=100,
-    epsilon=1.0,
-    alpha=0.1,
-    gamma=0.9,
-    decay=0.999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-q_learners_high = [QLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=5000,
-    max_steps=100,
-    epsilon=1.0,
-    alpha=0.1,
-    gamma=0.9,
-    decay=0.999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-dqn_learners_low = [DqnLearning(
-    env=env,
-    discretizer=discretizer_low,
-    model=nn_low,
-    buffer=buffer_low,
-    batch_size=32,
-    episodes=5000,
-    max_steps=100,
-    epsilon=1.0,
-    alpha=0.01,
-    gamma=0.9,
-    decay=0.999999,
-) for _ in range(NODES)]
-
-dqn_learners_high = [DqnLearning(
-    env=env,
-    discretizer=discretizer_high,
-    model=nn_high,
-    buffer=buffer_high,
-    batch_size=32,
-    episodes=5000,
-    max_steps=100,
-    epsilon=1.0,
-    alpha=0.01,
-    gamma=0.9,
-    decay=0.999999,
-) for _ in range(NODES)]
-
-mlr_learners = [
-    MatrixLowRankLearning(
-        env=env,
-        discretizer=discretizer_high,
-        episodes=5000,
-        max_steps=100,
-        epsilon=1.0,
-        alpha=0.01,
-        gamma=0.9,
-        decay=0.999999,
-        min_epsilon=0.0,
-        init_ord=1.0,
-        k=4
-    ) for _ in range(NODES)]
-
-tlr_learners = [
-    TensorLowRankLearning(
-        env=env,
-        discretizer=discretizer_high,
-        episodes=5000,
-        max_steps=100,
-        epsilon=1.0,
-        alpha=0.005,
-        gamma=0.9,
-        decay=0.999999,
-        min_epsilon=0.0,
-        init_ord=1.0,
-        k=4
-    ) for _ in range(NODES)]
-
-with Pool(NODES) as pool:
-    q_learners_low_trained = pool.map(run_experiment, q_learners_low)
-
-with Pool(NODES) as pool:
-    q_learners_high_trained = pool.map(run_experiment, q_learners_high)
-
-with Pool(NODES) as pool:
-    mlr_learners_trained = pool.map(run_experiment, mlr_learners)
-
-with Pool(NODES) as pool:
-    tlr_learners_trained = pool.map(run_experiment, tlr_learners)
-
-with Pool(NODES) as pool:
-    dqn_learners_low_trained = pool.map(run_experiment, dqn_learners_low)
-
-N = 70
-
-pend_steps_q_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_low_trained], axis=0)
-pend_steps_q_high = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_high_trained], axis=0)
-pend_steps_mlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in mlr_learners_trained], axis=0)
-pend_steps_tlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in tlr_learners_trained], axis=0)
-pend_steps_dqn_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in dqn_learners_low_trained], axis=0)
-
-
-pend_reward_q_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_low_trained])
-pend_reward_q_high = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_high_trained])
-pend_reward_mlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in mlr_learners_trained])
-pend_reward_tlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in tlr_learners_trained])
-pend_reward_dqn_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in dqn_learners_low_trained])
-
-print("Pendulum Done")
-
-
-# Cartpole
-env = CustomContinuousCartPoleEnv()
-
-discretizer_low = Discretizer(
-    min_points_states=[-4.8, -0.5, -0.42, -0.9],
-    max_points_states=[4.8, 0.5, 0.42, 0.9],
-    bucket_states=[10, 10, 20, 20],
-    min_points_actions=[-1],
-    max_points_actions=[1],
-    bucket_actions=[4]
-)
-
-discretizer_high = Discretizer(
-    min_points_states=[-4.8, -0.5, -0.42, -0.9],
-    max_points_states=[4.8, 0.5, 0.42, 0.9],
-    bucket_states=[10, 10, 20, 20],
-    min_points_actions=[-1],
-    max_points_actions=[1],
-    bucket_actions=[10]
-)
-
-q_learners_low = [QLearning(
-    env=env,
-    discretizer=discretizer_low,
-    episodes=40000,
-    max_steps=100,
-    epsilon=0.4,
-    alpha=0.1,
-    gamma=0.9,
-    decay=0.999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-q_learners_high = [QLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=40000,
-    max_steps=100,
-    epsilon=0.4,
-    alpha=0.1,
-    gamma=0.9,
-    decay=0.999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-mlr_learners = [MatrixLowRankLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=40000,
-    max_steps=100,
-    epsilon=0.4,
-    alpha=0.01,
-    gamma=0.9,
-    decay=0.999999,
-    min_epsilon=0.0,
-    init_ord=1.0,
-    k=4
-) for _ in range(NODES)]
-
-tlr_learners = [TensorLowRankLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=40000,
-    max_steps=100,
-    epsilon=0.4,
-    alpha=0.001,
-    gamma=0.9,
-    decay=0.999999,
-    min_epsilon=0.0,
-    init_ord=1.0,
-    k=10
-) for _ in range(NODES)]
-
-with Pool(NODES) as pool:
-    q_learners_low_trained = pool.map(run_experiment, q_learners_low)
-
-with Pool(NODES) as pool:
-    q_learners_high_trained = pool.map(run_experiment, q_learners_high)
-
-with Pool(NODES) as pool:
-    mlr_learners_trained = pool.map(run_experiment, mlr_learners)
-
-with Pool(NODES) as pool:
-    tlr_learners_trained = pool.map(run_experiment, tlr_learners)
-
-N = 500
-
-cart_steps_q_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_low_trained], axis=0)
-cart_steps_q_high = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_high_trained], axis=0)
-cart_steps_mlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in mlr_learners_trained], axis=0)
-cart_steps_tlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in tlr_learners_trained], axis=0)
-
-cart_reward_q_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_low_trained])
-cart_reward_q_high = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_high_trained])
-cart_reward_mlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in mlr_learners_trained])
-cart_reward_tlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in tlr_learners_trained])
-
-print("Cartpole Done")
-
-# MountainCar
-env = CustomContinuous_MountainCarEnv()
-
-discretizer_low = Discretizer(
-    min_points_states=[-1.2, -0.07],
-    max_points_states=[0.6, 0.07],
-    bucket_states=[10, 20],
-    min_points_actions=[-1.0],
-    max_points_actions=[1.0],
-    bucket_actions=[2]
-)
-
-discretizer_high = Discretizer(
-    min_points_states=[-1.2, -0.07],
-    max_points_states=[0.6, 0.07],
-    bucket_states=[10, 20],
-    min_points_actions=[-1.0],
-    max_points_actions=[1.0],
-    bucket_actions=[10]
-)
-
-q_learners_low = [QLearning(
-    env=env,
-    discretizer=discretizer_low,
-    episodes=10000,
-    max_steps=2000,
-    epsilon=1.0,
-    alpha=0.1,
-    gamma=0.99,
-    decay=0.999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-q_learners_high = [QLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=10000,
-    max_steps=2000,
-    epsilon=1.0,
-    alpha=0.1,
-    gamma=0.99,
-    decay=0.999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-mlr_learners = [MatrixLowRankLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=10000,
-    max_steps=2000,
-    epsilon=1.0,
-    alpha=0.001,
-    gamma=0.99,
-    decay=0.999999,
-    min_epsilon=0.0,
-    init_ord=1.0,
-    k=10
-) for _ in range(NODES)]
-
-tlr_learners = [TensorLowRankLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=10000,
-    max_steps=2000,
-    epsilon=1.0,
-    alpha=0.001,
-    gamma=0.99,
-    decay=0.999999,
-    min_epsilon=0.0,
-    init_ord=1.0,
-    k=10
-) for _ in range(NODES)]
-
-with Pool(NODES) as pool:
-    q_learners_low_trained = pool.map(run_experiment, q_learners_low)
-
-with Pool(NODES) as pool:
-    q_learners_high_trained = pool.map(run_experiment, q_learners_high)
-
-with Pool(NODES) as pool:
-    mlr_learners_trained = pool.map(run_experiment, mlr_learners)
-
-with Pool(NODES) as pool:
-    tlr_learners_trained = pool.map(run_experiment, tlr_learners)
-
-N = 100
-
-mount_steps_q_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_low_trained], axis=0)
-mount_steps_q_high = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_high_trained], axis=0)
-mount_steps_mlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in mlr_learners_trained], axis=0)
-mount_steps_tlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in tlr_learners_trained], axis=0)
-
-mount_reward_q_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_low_trained])
-mount_reward_q_high = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_high_trained])
-mount_reward_mlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in mlr_learners_trained])
-mount_reward_tlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in tlr_learners_trained])
-
-print("Mountaincar Done")
-
-# Goddard
-env = CustomGoddardEnv()
-
-discretizer_low = Discretizer(
-    min_points_states=[0.0, 1.00, 0.6],
-    max_points_states=[0.12, 1.03, 1],
-    bucket_states=[20, 20, 20],
-    min_points_actions=[0],
-    max_points_actions=[1.0],
-    bucket_actions=[2]
-)
-
-discretizer_high = Discretizer(
-    min_points_states=[0.0, 1.00, 0.6],
-    max_points_states=[0.12, 1.03, 1],
-    bucket_states=[20, 20, 20],
-    min_points_actions=[0],
-    max_points_actions=[1.0],
-    bucket_actions=[10]
-)
-
-discretizer_tlr = Discretizer(
-    min_points_states=[0, 1.00, 0.6],
-    max_points_states=[0.12, 1.03, 1],
-    bucket_states=[20, 20, 20],
-    min_points_actions=[0],
-    max_points_actions=[1.0],
-    bucket_actions=[10],
-    states_structure=[1, 2],
-)
-
-q_learners_low = [QLearning(
-    env=env,
-    discretizer=discretizer_low,
-    episodes=1000000,
-    max_steps=1000,
-    epsilon=1.0,
-    alpha=0.1,
-    gamma=0.9999,
-    decay=0.9999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-q_learners_high = [QLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=1000000,
-    max_steps=1000,
-    epsilon=1.0,
-    alpha=0.1,
-    gamma=0.9999,
-    decay=0.9999999,
-    min_epsilon=0.0
-) for _ in range(NODES)]
-
-mlr_learners = [MatrixLowRankLearning(
-    env=env,
-    discretizer=discretizer_high,
-    episodes=1000000,
-    max_steps=1000,
-    epsilon=1.0,
-    alpha=0.001,
-    gamma=0.9999,
-    decay=0.9999999,
-    min_epsilon=0.0,
-    init_ord=1.0,
-    k=10
-) for _ in range(NODES)]
-
-tlr_learners = [TensorLowRankLearning(
-    env=env,
-    discretizer=discretizer_tlr,
-    episodes=1000000,
-    max_steps=1000,
-    epsilon=1.0,
-    alpha=0.00001,
-    gamma=0.9999,
-    decay=0.9999999,
-    min_epsilon=0.0,
-    init_ord=1.0,
-    k=10,
-    bias=0.5,
-) for _ in range(NODES)]
-
-with Pool(NODES) as pool:
-    q_learners_low_trained = pool.map(run_experiment, q_learners_low)
-
-with Pool(NODES) as pool:
-    q_learners_high_trained = pool.map(run_experiment, q_learners_high)
-
-with Pool(NODES) as pool:
-    mlr_learners_trained = pool.map(run_experiment, mlr_learners)
-
-with Pool(NODES) as pool:
-    tlr_learners_trained = pool.map(run_experiment, tlr_learners)
-
-N = 50
-
-goddard_steps_q_low = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_low_trained], axis=0)
-goddard_steps_q_high = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in q_learners_high_trained], axis=0)
-goddard_steps_mlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in mlr_learners_trained], axis=0)
-goddard_steps_tlr = np.median([pd.Series(learner.greedy_steps).rolling(N).median() for learner in tlr_learners_trained], axis=0)
-
-goddard_reward_q_low = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_low_trained])
-goddard_reward_q_high = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in q_learners_high_trained])
-goddard_reward_mlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in mlr_learners_trained])
-goddard_reward_tlr = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in tlr_learners_trained])
-
-print(goddard_reward_mlr, goddard_reward_tlr)
-print("Rocket Done")
-
-labels = [
-    "Q-learning low",
-    "Q-learning high",
-    "MLR-learning",
-    "TLR-learning",
-]
-
-with plt.style.context(['science'], ['ieee']):
-    matplotlib.rcParams.update({'font.size': 18})
-
-    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8, 7))
-    axes = axes.flatten()
-
-    axes[0].plot(pend_steps_q_low, color='b')
-    axes[0].plot(pend_steps_q_high, color='r')
-    axes[0].plot(pend_steps_mlr, color='g')
-    axes[0].plot(pend_steps_tlr, color='y')
-    axes[0].set_xlabel("Episodes", labelpad=4)
-    axes[0].set_ylabel("(a) $\# Steps$")
-    axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-    axes[0].set_xlim(0, 5000)
-    axes[0].legend(labels, fontsize=12)
-    axes[0].grid()
-
-    axes[1].plot(cart_steps_q_low, color='b')
-    axes[1].plot(cart_steps_q_high, color='r')
-    axes[1].plot(cart_steps_mlr, color='g')
-    axes[1].plot(cart_steps_tlr, color='y')
-    axes[1].set_xlabel("Episodes", labelpad=4)
-    axes[1].set_ylabel("(b) $\# Steps$")
-    axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-    axes[1].set_xlim(0, 40000)
-    axes[1].legend(labels, fontsize=12)
-    axes[1].grid()
-
-    axes[2].plot(mount_steps_q_low, color='b')
-    axes[2].plot(mount_steps_q_high, color='r')
-    axes[2].plot(mount_steps_mlr, color='g')
-    axes[2].plot(mount_steps_tlr, color='y')
-    axes[2].set_xlabel("Episodes", labelpad=4)
-    axes[2].set_ylabel("(c) $\# Steps$")
-    axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-    axes[2].set_xlim(0, 5000)
-    axes[2].legend(labels, fontsize=12)
-    axes[2].grid()
-
-    axes[3].plot(goddard_steps_q_low, color='b')
-    axes[3].plot(goddard_steps_q_high, color='r')
-    axes[3].plot(goddard_steps_mlr, color='g')
-    axes[3].plot(goddard_steps_tlr, color='y')
-    axes[3].set_xlabel("Episodes", labelpad=4)
-    axes[3].set_ylabel("(d) $\# Steps$")
-    axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-    axes[3].set_ylim(180, 500)
-    axes[3].set_xlim(0, 50000)
-    axes[3].legend(labels, fontsize=12)
-    axes[3].grid()
-
-    plt.tight_layout()
-
-    fig.savefig('figures/fig_5.jpg', ddpi=300)

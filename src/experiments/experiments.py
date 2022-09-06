@@ -62,7 +62,7 @@ class Experiment:
         models = []
         for path in os.listdir('nn_checkpoints'):
 
-            with open(os.path.join('nn_checkpoints', path), 'r') as f:
+            with open(os.path.join('nn_checkpoints', path), 'rb') as f:
                 model = pickle.load(f)
 
             if len(model.training_steps) > len(model.greedy_steps):
@@ -157,14 +157,6 @@ class Experiment:
         return learner
 
     def run_experiments(self, window):
-        """with Pool(self.nodes) as pool:
-            models_1 = pool.map(self.run_experiment, self.models[:50])
-
-        with Pool(self.nodes) as pool:
-            models_2 = pool.map(self.run_experiment, self.models[50:])
-        
-        models = models_1 + models_2"""
-
         with Pool(self.nodes) as pool:
             models = pool.map(self.run_experiment, self.models)
 

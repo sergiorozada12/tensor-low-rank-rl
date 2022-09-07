@@ -350,10 +350,10 @@ class ExperimentScale:
 
     def run_experiments(self):
         if self.parameters['type'] == 'q-model':
-            self._run_q_experiment()
+            self._run_q_experiments()
         elif self.parameters['type'] == 'mlr-model':
-            self._run_mlr_experiment()
+            self._run_mlr_experiments()
         elif self.parameters['type'] == 'tlr-model':
-            self._run_tlr_experiment()
+            self._run_tlr_experiments()
         elif self.parameters['type'] == 'dqn-model':
-            self._run_dqn_experiment()
+            self._run_dqn_experiments()

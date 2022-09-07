@@ -22,7 +22,7 @@ N_NODES = 100
 
 if __name__ == "__main__":
     # Pendulum
-    """experiments = [f for f in os.listdir('parameters') if 'pendulum' in f]
+    experiments = [f for f in os.listdir('parameters') if 'pendulum' in f]
     experiments_done = [f for f in os.listdir('results') if 'pendulum' in f]
     for name in experiments:
         if name in experiments_done:
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         if name in experiments_done:
             continue
         experiment = Experiment(name, env_rocket, N_NODES)
-        experiment.run_experiments(window=50)"""
+        experiment.run_experiments(window=50)
 
     paths_pendulum = [f for f in os.listdir('results') if 'pendulum' in f]
     paths_cartpole = [f for f in os.listdir('results') if 'cartpole' in f]
@@ -71,7 +71,6 @@ if __name__ == "__main__":
         "DQN-lear. la."
     ]
 
-    #with plt.style.context(['science'], ['ieee']):
     with plt.style.context(['ieee']):
         matplotlib.rcParams.update({'font.size': 18})
 

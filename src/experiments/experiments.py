@@ -333,7 +333,7 @@ class ExperimentScale:
     def _run_dqn_experiments(self):
         results = {}
         self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
-        for arch in self.parameters['architecture']:
+        for arch in self.parameters['arch']:
             models = self._get_dqn_models(arch)
 
             with Pool(self.nodes) as pool:

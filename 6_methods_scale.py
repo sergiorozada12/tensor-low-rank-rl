@@ -9,7 +9,7 @@ from src.environments.cartpole import CustomContinuousCartPoleEnv
 from src.environments.mountaincar import CustomContinuous_MountainCarEnv
 from src.environments.goddard import CustomGoddardEnv
 
-from src.experiments.experiments import Experiment
+from src.experiments.experiments import ExperimentScale
 
 env_pendulum = CustomPendulumEnv()
 env_cartpole = CustomContinuousCartPoleEnv()
@@ -17,7 +17,7 @@ env_mountaincar = CustomContinuous_MountainCarEnv()
 env_rocket = CustomGoddardEnv()
 
 
-N_NODES = 100
+N_NODES = 10
 
 
 if __name__ == "__main__":
@@ -27,10 +27,10 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        experiment = Experiment(name, env_pendulum, N_NODES)
-        experiment.run_experiments(window=70)
+        experiment = ExperimentScale(name, env_pendulum, N_NODES)
+        experiment.run_experiments()
 
-    # Cartpole
+    """# Cartpole
     experiments = [f for f in os.listdir('parameters') if 'cartpole' in f]
     experiments_done = [f for f in os.listdir('results') if 'cartpole' in f]
     for name in experiments:
@@ -200,4 +200,5 @@ if __name__ == "__main__":
 
         plt.tight_layout()
 
-        fig.savefig('figures/fig_6.jpg', dpi=300)
+        fig.savefig('figures/fig_6.jpg', dpi=300)"""
+

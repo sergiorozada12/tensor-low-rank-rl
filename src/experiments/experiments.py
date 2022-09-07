@@ -1,6 +1,7 @@
 import os
 import json
 import pickle
+from platform import architecture
 
 from pathos.multiprocessing import ProcessingPool as Pool
 
@@ -169,3 +170,190 @@ class Experiment:
 
         for path in os.listdir('nn_checkpoints'):
             os.remove(os.path.join('nn_checkpoints', path))
+
+
+class ExperimentScale:
+    def __init__(self, name, env, nodes):
+        self.env = env
+        self.nodes = nodes
+        self.name = name
+
+        with open(f'parameters/{name}', 'r') as f:
+            self.parameters = json.load(f)
+
+    def _get_discretizer(self, bucket_actions):
+        states_structure = self.parameters.get('states_structure', None)
+        discrete_action = self.parameters.get('discrete_action', False)
+        return Discretizer(
+            min_points_states=self.parameters['min_points_states'],
+            max_points_states=self.parameters['max_points_states'],
+            bucket_states=self.parameters['bucket_states'],
+            min_points_actions=self.parameters['min_points_actions'],
+            max_points_actions=self.parameters['max_points_actions'],
+            bucket_actions=bucket_actions,
+            states_structure=states_structure,
+            discrete_action=discrete_action
+        )
+
+    def _get_q_models(self):
+        return [QLearning(
+            env=self.env,
+            discretizer=self.discretizer,
+            episodes=self.parameters['episodes'],
+            max_steps=self.parameters['max_steps'],
+            epsilon=self.parameters['epsilon'],
+            alpha=self.parameters['alpha'],
+            gamma=self.parameters['gamma'],
+            decay=self.parameters['decay'],
+        ) for _ in range(self.nodes)]
+
+    def _get_mlr_models(self, k):
+        return [MatrixLowRankLearning(
+            env=self.env,
+            discretizer=self.discretizer,
+            episodes=self.parameters['episodes'],
+            max_steps=self.parameters['max_steps'],
+            epsilon=self.parameters['epsilon'],
+            alpha=self.parameters['alpha'],
+            gamma=self.parameters['gamma'],
+            decay=self.parameters['decay'],
+            k=k
+        ) for _ in range(self.nodes)]
+
+    def _get_tlr_models(self, k):
+        bias = self.parameters.get('bias', 0.0)
+        return [TensorLowRankLearning(
+            env=self.env,
+            discretizer=self.discretizer,
+            episodes=self.parameters['episodes'],
+            max_steps=self.parameters['max_steps'],
+            epsilon=self.parameters['epsilon'],
+            alpha=self.parameters['alpha'],
+            gamma=self.parameters['gamma'],
+            decay=self.parameters['decay'],
+            k=k,
+            bias=bias
+        ) for _ in range(self.nodes)]
+
+    def _get_dqn_models(self, architecture):
+        model_online = Mlp(
+            len(self.parameters['bucket_states']),
+            architecture,
+            self.discretizer.n_actions[0]
+        )
+
+        model_target = Mlp(
+            len(self.parameters['bucket_states']),
+            architecture,
+            self.discretizer.n_actions[0]
+        )
+
+        model_target.load_state_dict(model_online.state_dict())
+
+        if self.parameters['prioritized_experience']:
+            buffer = PrioritizedReplayBuffer(self.parameters['buffer_size'], 1.0)
+        else:
+            buffer = ReplayBuffer(self.parameters['buffer_size'])
+
+        return [DqnLearning(
+            env=self.env,
+            discretizer=self.discretizer,
+            model_online=model_online,
+            model_target=model_target,
+            buffer=buffer,
+            batch_size=self.parameters['batch_size'],
+            episodes=self.parameters['episodes'],
+            max_steps=self.parameters['max_steps'],
+            epsilon=self.parameters['epsilon'],
+            alpha=self.parameters['alpha'],
+            gamma=self.parameters['gamma'],
+            decay=self.parameters['decay'],
+            prioritized_experience=self.parameters['prioritized_experience'],
+        ) for _ in range(self.nodes)]
+
+    @staticmethod
+    def run_experiment(learner):
+        learner.train(run_greedy_frequency=10)
+        return learner
+
+    def _run_q_experiments(self):
+        results = {}
+        for bucket_actions in self.parameters['bucket_actions']:
+            self.discretizer = self._get_discretizer(bucket_actions)
+            models = self._get_q_models()
+
+            with Pool(self.nodes) as pool:
+                trained_models = pool.map(self.run_experiment, models)
+
+            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            params = trained_models[0].Q.size
+
+            results['parameters'] = params
+            results['reward'] = rewards
+
+        with open(f'results/{self.name}', 'w') as f:
+            json.dump(results, f)
+
+    def _run_mlr_experiments(self):
+        results = {}
+        self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
+        for k in self.parameters['k']:
+            models = self._get_mlr_models(k)
+
+            with Pool(self.nodes) as pool:
+                trained_models = pool.map(self.run_experiment, models)
+
+            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            params = trained_models[0].L.size + trained_models[0].R.size
+
+            results['parameters'] = params
+            results['reward'] = rewards
+
+        with open(f'results/{self.name}', 'w') as f:
+            json.dump(results, f)
+
+    def _run_tlr_experiments(self):
+        results = {}
+        self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
+        for k in self.parameters['k']:
+            models = self._get_tlr_models(k)
+
+            with Pool(self.nodes) as pool:
+                trained_models = pool.map(self.run_experiment, models)
+
+            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            params = sum([factor.size for factor in trained_models[0].factors])
+
+            results['parameters'] = params
+            results['reward'] = rewards
+
+        with open(f'results/{self.name}', 'w') as f:
+            json.dump(results, f)
+
+    def _run_dqn_experiments(self):
+        results = {}
+        self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
+        for arch in self.parameters['architecture']:
+            models = self._get_dqn_models(arch)
+
+            with Pool(self.nodes) as pool:
+                trained_models = pool.map(self.run_experiment, models)
+
+            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            params = sum(arch)
+
+            results['parameters'] = params
+            results['reward'] = rewards
+
+        with open(f'results/{self.name}', 'w') as f:
+            json.dump(results, f)
+
+    def run_experiments(self):
+        if self.parameters['type'] == 'q-model':
+            self._run_q_experiment()
+        elif self.parameters['type'] == 'mlr-model':
+            self._run_mlr_experiment()
+        elif self.parameters['type'] == 'tlr-model':
+            self._run_tlr_experiment()
+        elif self.parameters['type'] == 'dqn-model':
+            self._run_dqn_experiment()

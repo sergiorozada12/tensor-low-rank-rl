@@ -331,7 +331,12 @@ class ExperimentScale:
             json.dump(results, f)
 
     def _run_dqn_experiments(self):
-        results = {}
+
+        results = {
+            'parameters': [],
+            'reward': []
+        }
+
         self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
         for arch in self.parameters['arch']:
             models = self._get_dqn_models(arch)
@@ -342,8 +347,8 @@ class ExperimentScale:
             rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = sum(arch)
 
-            results['parameters'] = params
-            results['reward'] = rewards
+            results['parameters'].append(params)
+            results['reward'].append(rewards)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)

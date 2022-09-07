@@ -27,8 +27,10 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
+        print(name)
         experiment = ExperimentScale(name, env_pendulum, N_NODES)
         experiment.run_experiments()
+        print('done')
 
     """# Cartpole
     experiments = [f for f in os.listdir('parameters') if 'cartpole' in f]

@@ -188,7 +188,6 @@ class DqnLearning:
                 self.run_training_episode()
                 if self.episode % 1000 == 0:
                     self.save_checkpoint()
-                    print(self.episode, self.training_steps[-1], self.training_cumulative_reward[-1])
                 self.write_env_metrics_train()
 
                 if self.episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:

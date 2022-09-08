@@ -277,7 +277,12 @@ class ExperimentScale:
         return learner
 
     def _run_q_experiments(self):
-        results = {}
+        
+        results = {
+            'parameters': [],
+            'reward': []
+        }
+
         for bucket_actions in self.parameters['bucket_actions']:
             self.discretizer = self._get_discretizer(bucket_actions)
             models = self._get_q_models()
@@ -288,14 +293,19 @@ class ExperimentScale:
             rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = trained_models[0].Q.size
 
-            results['parameters'] = params
-            results['reward'] = rewards
+            results['parameters'].append(params)
+            results['reward'].append(rewards)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)
 
     def _run_mlr_experiments(self):
-        results = {}
+        
+        results = {
+            'parameters': [],
+            'reward': []
+        }
+
         self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
         for k in self.parameters['k']:
             models = self._get_mlr_models(k)
@@ -306,14 +316,19 @@ class ExperimentScale:
             rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = trained_models[0].L.size + trained_models[0].R.size
 
-            results['parameters'] = params
-            results['reward'] = rewards
+            results['parameters'].append(params)
+            results['reward'].append(rewards)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)
 
     def _run_tlr_experiments(self):
-        results = {}
+        
+        results = {
+            'parameters': [],
+            'reward': []
+        }
+
         self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
         for k in self.parameters['k']:
             models = self._get_tlr_models(k)
@@ -324,8 +339,8 @@ class ExperimentScale:
             rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = sum([factor.size for factor in trained_models[0].factors])
 
-            results['parameters'] = params
-            results['reward'] = rewards
+            results['parameters'].append(params)
+            results['reward'].append(rewards)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)

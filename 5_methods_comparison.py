@@ -71,7 +71,7 @@ if __name__ == "__main__":
         "DQN-lear. la."
     ]
 
-    with plt.style.context(['ieee']):
+    with plt.style.context(['science'], ['ieee']):
         matplotlib.rcParams.update({'font.size': 18})
 
         fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8, 7))
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         axes[0].plot(json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
         axes[0].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
         axes[0].set_xlabel("Episodes", labelpad=4)
-        axes[0].set_ylabel("(a) $\# Steps$")
+        axes[0].set_ylabel("(a) $\#$ Steps")
         axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[0].set_xlim(0, 5000)
         axes[0].legend(labels, fontsize=12)
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         axes[1].plot(json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
         axes[1].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
         axes[1].set_xlabel("Episodes", labelpad=4)
-        axes[1].set_ylabel("(a) $\# Steps$")
+        axes[1].set_ylabel("(b) $\#$ Steps")
         axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[1].set_xlim(0, 40000)
         axes[1].legend([l for l in labels if 'sm.' not in l], fontsize=12)
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         axes[2].plot(json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
         axes[2].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
         axes[2].set_xlabel("Episodes", labelpad=4)
-        axes[2].set_ylabel("(a) $\# Steps$")
+        axes[2].set_ylabel("(c) $\#$ Steps")
         axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[2].set_xlim(0, 5000)
         axes[2].legend(labels, fontsize=12)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         axes[3].plot(json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
         axes[3].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
         axes[3].set_xlabel("Episodes", labelpad=4)
-        axes[3].set_ylabel("(a) $\# Steps$")
+        axes[3].set_ylabel("(d) $\#$ Steps")
         axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[3].set_ylim(180, 500)
         axes[3].set_xlim(0, 500000)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
         fig.savefig('figures/fig_5.jpg', ddpi=300)
 
 
-    with plt.style.context(['ieee']):
+    with plt.style.context(['science'], ['ieee']):
         matplotlib.rcParams.update({'font.size': 18})
 
         fig, axes = plt.subplots(nrows=2, ncols=2, figsize=[8, 7])
@@ -153,7 +153,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
         ]
         axes[0].bar(labels, rewards, color='b')
-        axes[0].set_ylabel("Cumm. Reward")
+        axes[0].set_ylabel("(a) Cumm. Reward")
         axes[0].set_xticklabels(labels, rotation = 90, size=10)
         axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
         ]
         axes[1].bar([l for l in labels if 'sm.' not in l], rewards, color='b')
-        axes[1].set_ylabel("Cumm. Reward")
+        axes[1].set_ylabel("(b) Cumm. Reward")
         axes[1].set_xticklabels([l for l in labels if 'sm.' not in l], rotation = 90, size=10)
         axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
@@ -180,7 +180,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
         ]
         axes[2].bar(labels, rewards, color='b')
-        axes[2].set_ylabel("Cumm. Reward")
+        axes[2].set_ylabel("(c) Cumm. Reward")
         axes[2].set_xticklabels(labels, rotation = 90, size=10)
         axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
@@ -194,8 +194,8 @@ if __name__ == "__main__":
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
         ]
         axes[3].bar(labels, rewards, color='b')
-        axes[3].set_ylabel("Cumm. Reward")
-        axes[3].set_xticklabels([l for l in labels if 'la.' not in l], rotation = 90, size=10)
+        axes[3].set_ylabel("(d) Cumm. Reward")
+        axes[3].set_xticklabels(labels, rotation = 90, size=10)
         axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
         plt.tight_layout()

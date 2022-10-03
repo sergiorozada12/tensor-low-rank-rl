@@ -290,7 +290,7 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = trained_models[0].Q.size
 
             results['parameters'].append(params)
@@ -313,7 +313,7 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = trained_models[0].L.size + trained_models[0].R.size
 
             results['parameters'].append(params)
@@ -336,7 +336,7 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = sum([factor.size for factor in trained_models[0].factors])
 
             results['parameters'].append(params)
@@ -359,7 +359,7 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
             params = sum(arch)
 
             results['parameters'].append(params)

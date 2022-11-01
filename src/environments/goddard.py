@@ -118,12 +118,7 @@ class CustomGoddardEnv(gym.Env):
             is_tank_empty and self._state[self.V_INDEX] < 0 and self._h_max > self._r.H0
         )
 
-        if is_done:
-            reward = 100*(self._h_max - self._r.H0)
-        else:
-            reward = 0.0
         reward = 100*(self._h_max - self._r.H0)
-
         extras = dict(zip(self.extras_labels(), [action[self.U_INDEX], thrust, drag, g]))
 
         return self._observation(), reward, is_done, extras

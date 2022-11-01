@@ -14,7 +14,7 @@ class CustomPendulumEnv(PendulumEnv):
 
         u = np.clip(u, -self.max_torque, self.max_torque)[0]
         self.last_u = u  # for rendering
-        reward = 1 - angle_normalize(th) ** 2 + .1 * thdot ** 2 + (u ** 2)
+        reward = 1 - (angle_normalize(th) ** 2 + .1 * thdot ** 2 + 0.1*(u ** 2))
 
         newthdot = thdot + (-3 * g / (2 * l) * np.sin(th + np.pi) + 3. / (m * l ** 2) * u) * dt
         newth = th + newthdot * dt

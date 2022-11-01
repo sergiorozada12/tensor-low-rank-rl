@@ -28,7 +28,7 @@ if __name__ == "__main__":
         if name in experiments_done:
             continue
         experiment = Experiment(name, env_pendulum, N_NODES)
-        experiment.run_experiments(window=70)
+        experiment.run_experiments(window=30)
 
     # Cartpole
     experiments = [f for f in os.listdir('parameters') if 'cartpole' in f]

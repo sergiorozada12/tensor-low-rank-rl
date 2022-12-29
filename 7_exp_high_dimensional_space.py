@@ -4,8 +4,8 @@ from src.experiments.experiments import Experiment
 env_highway = CustomHighwayEnv()
 
 N_NODES = 20
-PATH_TLR = 'parameters/highway_tlr.json'
-PATH_DQN = 'parameters/highway_dqn.json'
+PATH_TLR = 'highway_tlr.json'
+PATH_DQN = 'highway_dqn.json'
 
 
 if __name__ == "__main__":

@@ -83,12 +83,12 @@ if __name__ == "__main__":
         axes[0].plot(json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
         axes[0].plot(json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
         axes[0].plot(json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
-        axes[0].plot(json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[0].plot(s, color='k')
         axes[0].set_xlabel("Episodes", labelpad=4)
         axes[0].set_ylabel("(a) $\#$ Steps")
         axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-        axes[0].set_xlim(0, 5000)
-        axes[0].legend(labels, fontsize=12)
+        axes[0].set_xlim(0, 10000)
+        axes[0].legend(labels, fontsize=12, loc='upper right')
         axes[0].grid()
 
         prefix = 'results/cartpole_'
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         axes[1].set_ylabel("(b) $\#$ Steps")
         axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[1].set_xlim(0, 40000)
-        axes[1].legend([l for l in labels if 'sm.' not in l], fontsize=12)
+        axes[1].legend([l for l in labels if 'sm.' not in l], fontsize=12, loc='lower right')
         axes[1].grid()
 
         prefix = 'results/mountaincar_'
@@ -134,7 +134,7 @@ if __name__ == "__main__":
         axes[3].grid()
 
         plt.tight_layout()
-        fig.savefig('figures/fig_5.jpg', ddpi=300)
+        fig.savefig('figures/fig_5.jpg', dpi=300)
 
 
     with plt.style.context(['science'], ['ieee']):

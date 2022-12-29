@@ -65,6 +65,9 @@ class DqnLearning:
             state_tensor = torch.as_tensor(state, dtype=torch.float)
             q_values = self.model_online.forward(state_tensor)
             action_idx = q_values.abs().argmax().item()
+
+        if self.discretizer.discrete_action:
+            return action_idx
         return self.discretizer.get_action_from_index(action_idx)
 
     def choose_action(self, state):
@@ -148,10 +151,16 @@ class DqnLearning:
         state = self.env.reset()
         cumulative_reward = 0
 
+        if len(state.shape) > 1:
+            state = state.flatten()
+
         for step in range(self.max_steps):
             action = self.get_greedy_action(state) if is_greedy else self.choose_action(state)
             state_prime, reward, done, _ = self.env.step(action)
             cumulative_reward += reward
+
+            if len(state_prime.shape) > 1:
+                state_prime = state_prime.flatten()
 
             if is_train:
                 state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)

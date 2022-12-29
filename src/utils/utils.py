@@ -83,8 +83,6 @@ class Discretizer:
         return tuple(action_idx.tolist())
 
     def get_action_from_index(self, action_idx):
-        if self.discrete_action:
-            return action_idx[0]
         return self.min_points_actions + self.spacing_actions / 2 + action_idx * self.spacing_actions
 
 

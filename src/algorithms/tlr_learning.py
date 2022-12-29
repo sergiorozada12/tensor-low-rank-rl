@@ -50,6 +50,8 @@ class TensorLowRankLearning:
         state_idx = self.discretizer.get_state_index(state)
         q_simplified = self.get_q_from_state_idx(state_idx).reshape(self.discretizer.n_actions)
         action_idx = np.unravel_index(np.argmax(q_simplified), q_simplified.shape)
+        if self.discretizer.discrete_action:
+            return action_idx[0]
         return self.discretizer.get_action_from_index(action_idx)
 
     def get_q_from_state_idx(self, state_idx):
@@ -107,7 +109,6 @@ class TensorLowRankLearning:
                 grad_factor *= self.factors[non_factor_idx][tensor_indices[non_factor_idx], :]
 
             update = -error_signal * grad_factor / np.linalg.norm(grad_factor)
-            #self.factors[factor_idx][tensor_indices[factor_idx], :] -= self.alpha * update
             new_factors[factor_idx][tensor_indices[factor_idx], :] -= self.alpha * update
         self.factors = new_factors[:]
         if self.normalize_columns:

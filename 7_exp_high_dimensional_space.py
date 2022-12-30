@@ -11,3 +11,6 @@ PATH_DQN = 'highway_dqn.json'
 if __name__ == "__main__":
     experiment_tlr = Experiment(PATH_TLR, env_highway, N_NODES)
     experiment_tlr.run_experiments(window=100)
+
+    experiment_dqn = Experiment(PATH_DQN, env_highway, N_NODES)
+    experiment_dqn.run_experiments(window=100)

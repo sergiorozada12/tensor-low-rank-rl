@@ -19,10 +19,11 @@ from src.utils.utils import Discretizer, PrioritizedReplayBuffer, ReplayBuffer
 
 
 class Experiment:
-    def __init__(self, name, env, nodes, recover=False):
+    def __init__(self, name, env, nodes, recover=False, run_freq=10):
         self.env = env
         self.nodes = nodes
         self.name = name
+        self.run_freq = run_freq
 
         with open(f'parameters/{name}', 'r') as f:
             self.parameters = json.load(f)
@@ -271,9 +272,8 @@ class ExperimentScale:
             prioritized_experience=self.parameters['prioritized_experience'],
         ) for _ in range(self.nodes)]
 
-    @staticmethod
-    def run_experiment(learner):
-        learner.train(run_greedy_frequency=10)
+    def run_experiment(self, learner):
+        learner.train(run_greedy_frequency=self.run_freq)
         return learner
 
     def _run_q_experiments(self):

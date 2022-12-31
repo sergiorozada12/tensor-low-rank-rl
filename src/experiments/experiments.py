@@ -153,9 +153,8 @@ class Experiment:
             prioritized_experience=self.parameters['prioritized_experience'],
         ) for _ in range(self.nodes)]
 
-    @staticmethod
-    def run_experiment(learner):
-        learner.train(run_greedy_frequency=1)
+    def run_experiment(self, learner):
+        learner.train(run_greedy_frequency=self.run_freq)
         return learner
 
     def run_experiments(self, window):
@@ -174,10 +173,11 @@ class Experiment:
 
 
 class ExperimentScale:
-    def __init__(self, name, env, nodes):
+    def __init__(self, name, env, nodes, run_freq=10):
         self.env = env
         self.nodes = nodes
         self.name = name
+        self.run_freq = run_freq
 
         with open(f'parameters/{name}', 'r') as f:
             self.parameters = json.load(f)

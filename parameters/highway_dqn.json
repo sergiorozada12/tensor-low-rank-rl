@@ -13,8 +13,8 @@
     "alpha": 0.001,
     "gamma": 0.8,
     "decay": 0.999999,
-    "buffer_size": 10000,
-    "batch_size": 16,
+    "buffer_size": 1000000,
+    "batch_size": 32,
     "arch": [100, 100],
     "prioritized_experience": false
 }

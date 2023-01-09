@@ -163,6 +163,9 @@ class TensorLowRankLearning:
             for episode in range(self.episodes):
                 self.run_training_episode()
 
+                if episode > 0 and episode % 1000 == 0:
+                    print(episode, self.greedy_cumulative_reward[-100])
+
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
 

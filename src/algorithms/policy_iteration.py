@@ -8,7 +8,7 @@ class PolicyIteration:
         self.k = k
         self.gamma = gamma
 
-        self.nA, self.nS = self.env.nA, self.env.nS
+        self.nA, self.nS = self.env.action_space.n, self.env.observation_space.n
         self.P, self.R = self.get_model()
 
     def run(self):

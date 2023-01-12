@@ -9,6 +9,7 @@ from src.environments.cartpole import CustomContinuousCartPoleEnv
 from src.environments.mountaincar import CustomContinuous_MountainCarEnv
 from src.environments.acrobot import CustomAcrobotEnv
 
+from src.utils.utils import OOMFormatter
 from src.algorithms.q_learning import QLearning
 from src.utils.utils import Discretizer
 
@@ -153,11 +154,16 @@ with plt.style.context(['science'], ['ieee']):
     axes[0].bar(np.arange(1, len(sigma_pendulum) + 1), sigma_pendulum)
     axes[0].set_xlabel("(a) SV index", labelpad=6)
     axes[0].set_ylabel("$\sigma$")
+    axes[0].set_yticks([0, 40, 80])
+    axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+    axes[0].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
     axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
     axes[1].bar(np.arange(1, len(sigma_cartpole) + 1), sigma_cartpole)
     axes[1].set_xlabel("(b) SV index", labelpad=6)
     axes[1].set_ylabel("$\sigma$")
+    axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
+    axes[1].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
     axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
     axes[2].bar(np.arange(1, len(sigma_mountaincar) + 1), sigma_mountaincar)

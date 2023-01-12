@@ -15,10 +15,14 @@ from src.environments.mountaincar import CustomContinuous_MountainCarEnv
 
 def run_test_reward_pi(env, q, max_steps=10000):
     state = env.reset()
+
+    if not isinstance(state, int):
+        state = state[0]
+
     cum_r = 0
     for t in range(max_steps):
         action = np.argmax(q[state, :])
-        state, reward, done, _ = env.step(action)
+        state, reward, done = env.step(action)[:3]
         cum_r += reward
         if done:
             break
@@ -26,6 +30,7 @@ def run_test_reward_pi(env, q, max_steps=10000):
 
 def run_test_reward_rl(env, q, discretizer, max_steps=10000):
     state = env.reset()
+
     state_idx = discretizer.get_state_index(state)
     cum_r = 0
     for t in range(max_steps): 
@@ -45,7 +50,7 @@ def run_experiment(learner):
 NODES = 50
 
 rank = 1
-env = gym.make('FrozenLake8x8-v0')
+env = gym.make('FrozenLake8x8-v1')
 learners = [PolicyIteration(env=env, max_iter=10000, k=1000, gamma=0.95) for _ in range(NODES)]
 with Pool(NODES) as pool:
     learners_trained = pool.map(lambda learner: learner.run(), learners)
@@ -191,12 +196,11 @@ nD = discretizer.n_states.tolist() + discretizer.n_actions.tolist()
 q_matrices = [q_learner.Q.reshape(nS, nA).copy() for q_learner in learners_trained]
 reward_mountain = np.median([run_test_reward_rl(env, q.reshape(nD), discretizer, 2000) for q in q_matrices])
 q_matrices = [q - np.mean(q) for q in q_matrices]
-print([run_test_reward_rl(env, q.reshape(nD), discretizer, 2000) for q in q_matrices])
+
 rank = 12
 q_decomposed = [np.linalg.svd(q) for q in q_matrices]
 q_estimated = [u[:, :rank]@np.diag(sigma)[:rank, :rank]@v[:rank, :] for u, sigma, v in q_decomposed]
 reward_mountain_estimated = np.median([run_test_reward_rl(env, q.reshape(nD), discretizer, 2000) for q in q_estimated])
-print([run_test_reward_rl(env, q.reshape(nD), discretizer, 2000) for q in q_estimated])
 raw = np.array([
     reward_frozenlake,
     reward_racetrack,

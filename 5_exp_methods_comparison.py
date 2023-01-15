@@ -15,7 +15,7 @@ from src.utils.utils import OOMFormatter
 env_pendulum = CustomPendulumEnv()
 env_cartpole = CustomContinuousCartPoleEnv()
 env_mountaincar = CustomContinuous_MountainCarEnv()
-#env_rocket = CustomGoddardEnv()
+env_rocket = CustomGoddardEnv()
 
 
 N_NODES = 100
@@ -23,7 +23,6 @@ N_NODES = 100
 
 if __name__ == "__main__":
     # Pendulum
-    """
     experiments = [f for f in os.listdir('parameters') if 'pendulum' in f]
     experiments_done = [f for f in os.listdir('results') if 'pendulum' in f]
     for name in experiments:
@@ -57,7 +56,7 @@ if __name__ == "__main__":
         if name in experiments_done:
             continue
         experiment = Experiment(name, env_rocket, N_NODES)
-        experiment.run_experiments(window=50)"""
+        experiment.run_experiments(window=50)
 
     paths_pendulum = [f for f in os.listdir('results') if 'pendulum' in f]
     paths_cartpole = [f for f in os.listdir('results') if 'cartpole' in f]
@@ -152,7 +151,7 @@ if __name__ == "__main__":
 
 
     with plt.style.context(['science'], ['ieee']):
-        matplotlib.rcParams.update({'font.size': 18})
+        matplotlib.rcParams.update({'font.size': 16})
 
         fig, axes = plt.subplots(nrows=2, ncols=2, figsize=[8, 7])
         axes = axes.flatten()
@@ -168,7 +167,7 @@ if __name__ == "__main__":
         ]
         axes[0].bar(labels, rewards, color='b')
         axes[0].set_ylabel("(a) Cumm. Reward")
-        axes[0].set_xticklabels(labels, rotation = 90, size=10)
+        axes[0].set_xticklabels(labels, rotation = 90, size=12)
         axes[0].set_yticks([0, 50, 100])
         axes[0].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
         axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
@@ -183,7 +182,7 @@ if __name__ == "__main__":
         ]
         axes[1].bar([l for l in labels if 'sm.' not in l], rewards, color='b')
         axes[1].set_ylabel("(b) Cumm. Reward")
-        axes[1].set_xticklabels([l for l in labels if 'sm.' not in l], rotation = 90, size=10)
+        axes[1].set_xticklabels([l for l in labels if 'sm.' not in l], rotation = 90, size=12)
         axes[1].set_yticks([-100, 0, 100])
         axes[1].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
         axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
@@ -199,7 +198,7 @@ if __name__ == "__main__":
         ]
         axes[2].bar(labels, rewards, color='b')
         axes[2].set_ylabel("(c) Cumm. Reward")
-        axes[2].set_xticklabels(labels, rotation = 90, size=10)
+        axes[2].set_xticklabels(labels, rotation = 90, size=12)
         axes[2].set_yticks([0, 50, 100])
         axes[2].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
         axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
@@ -215,7 +214,7 @@ if __name__ == "__main__":
         ]
         axes[3].bar(labels, rewards, color='b')
         axes[3].set_ylabel("(d) Cumm. Reward")
-        axes[3].set_xticklabels(labels, rotation = 90, size=10)
+        axes[3].set_xticklabels(labels, rotation = 90, size=12)
         axes[3].set_yticks([0, 70, 140])
         axes[3].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
         axes[3].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))

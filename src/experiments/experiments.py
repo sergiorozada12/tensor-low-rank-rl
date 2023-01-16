@@ -162,8 +162,9 @@ class Experiment:
             models = pool.map(self.run_experiment, self.models)
 
         steps = np.median([pd.Series(learner.greedy_steps).rolling(window).median() for learner in models], axis=0)
-        rewards = np.median([np.mean(learner.greedy_cumulative_reward[-10:]) for learner in models])
-        data = {'steps': list(steps), 'rewards': rewards}
+        rewards = np.median([learner.mean_reward for learner in models])
+        rewards_std = np.median([learner.std_reward for learner in models])
+        data = {'steps': list(steps), 'rewards': rewards, 'std': rewards_std}
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(data, f)
@@ -280,7 +281,8 @@ class ExperimentScale:
         
         results = {
             'parameters': [],
-            'reward': []
+            'reward': [],
+            'reward_std': []
         }
 
         for bucket_actions in self.parameters['bucket_actions']:
@@ -290,11 +292,13 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([learner.mean_reward for learner in trained_models])
+            rewards_std = np.median([learner.std_reward for learner in trained_models])
             params = trained_models[0].Q.size
 
             results['parameters'].append(params)
             results['reward'].append(rewards)
+            results['reward_std'].append(rewards_std)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)
@@ -303,7 +307,8 @@ class ExperimentScale:
         
         results = {
             'parameters': [],
-            'reward': []
+            'reward': [],
+            'reward_std': []
         }
 
         self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
@@ -313,11 +318,13 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([learner.mean_reward for learner in trained_models])
+            rewards_std = np.median([learner.std_reward for learner in trained_models])
             params = trained_models[0].L.size + trained_models[0].R.size
 
             results['parameters'].append(params)
             results['reward'].append(rewards)
+            results['reward_std'].append(rewards_std)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)
@@ -326,7 +333,8 @@ class ExperimentScale:
         
         results = {
             'parameters': [],
-            'reward': []
+            'reward': [],
+            'reward_std': []
         }
 
         self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
@@ -336,11 +344,13 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([learner.mean_reward for learner in trained_models])
+            rewards_std = np.median([learner.std_reward for learner in trained_models])
             params = sum([factor.size for factor in trained_models[0].factors])
 
             results['parameters'].append(params)
             results['reward'].append(rewards)
+            results['reward_std'].append(rewards_std)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)
@@ -349,7 +359,8 @@ class ExperimentScale:
 
         results = {
             'parameters': [],
-            'reward': []
+            'reward': [],
+            'reward_std': []
         }
 
         self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
@@ -359,11 +370,13 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([np.median(learner.greedy_cumulative_reward[-10:]) for learner in trained_models])
+            rewards = np.median([learner.mean_reward for learner in trained_models])
+            rewards_std = np.median([learner.std_reward for learner in trained_models])
             params = sum(arch)
 
             results['parameters'].append(params)
             results['reward'].append(rewards)
+            results['reward_std'].append(rewards_std)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)
@@ -523,8 +536,8 @@ class ExperimentHighway:
             models = pool.map(self.run_experiment, self.models)
 
         rewards = np.median([pd.Series(learner.greedy_cumulative_reward).rolling(window).median() for learner in models], axis=0)
-        final_reward = np.median([np.median(learner.greedy_cumulative_reward[-100:]) for learner in models])
-        final_reward_std = np.median([np.std(learner.greedy_cumulative_reward[-100:]) for learner in models])
+        final_reward = np.median([learner.mean_reward for learner in models])
+        final_reward_std = np.median([learner.std_reward for learner in models])
         data = {'rewards': list(rewards), 'final_reward': final_reward, 'final_reward_std': final_reward_std}
 
         with open(f'results/{self.name}', 'w') as f:

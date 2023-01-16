@@ -107,6 +107,14 @@ class QLearning:
     def run_testing_episode(self):
         return self.run_episode(is_train=False, is_greedy=True)
 
+    def evaluate_final_policy(self):
+        rewards = []
+        for _ in range(1_000):
+            _, cumulative_reward = self.run_episode(is_train=False, is_greedy=True)
+            rewards.append(cumulative_reward)
+        self.mean_reward = np.mean(rewards)
+        self.std_reward = np.std(rewards)
+
     def train(self, run_greedy_frequency=None):
         if run_greedy_frequency:
             for episode in range(self.episodes):
@@ -117,3 +125,5 @@ class QLearning:
         else:
             for _ in range(self.episodes):
                 self.run_training_episode()
+
+        self.evaluate_final_policy()

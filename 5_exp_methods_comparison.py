@@ -23,7 +23,7 @@ N_NODES = 100
 
 if __name__ == "__main__":
     # Pendulum
-    experiments = [f for f in os.listdir('parameters') if 'pendulum' in f]
+    experiments = [f for f in os.listdir('parameters') if 'pendulum' in f and 'scale' not in f]
     experiments_done = [f for f in os.listdir('results') if 'pendulum' in f]
     for name in experiments:
         if name in experiments_done:
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         experiment.run_experiments(window=30)
 
     # Cartpole
-    experiments = [f for f in os.listdir('parameters') if 'cartpole' in f]
+    experiments = [f for f in os.listdir('parameters') if 'cartpole' in f and 'scale' not in f]
     experiments_done = [f for f in os.listdir('results') if 'cartpole' in f]
     for name in experiments:
         if name in experiments_done:
@@ -41,7 +41,7 @@ if __name__ == "__main__":
         experiment.run_experiments(window=500)
 
     # Mountaincar
-    experiments = [f for f in os.listdir('parameters') if 'mountaincar' in f]
+    experiments = [f for f in os.listdir('parameters') if 'mountaincar' in f and 'scale' not in f]
     experiments_done = [f for f in os.listdir('results') if 'mountaincar' in f]
     for name in experiments:
         if name in experiments_done:
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         experiment.run_experiments(window=100)
 
     # Rocket
-    experiments = [f for f in os.listdir('parameters') if 'rocket' in f]
+    experiments = [f for f in os.listdir('parameters') if 'rocket' in f and 'scale' not in f]
     experiments_done = [f for f in os.listdir('results') if 'rocket' in f]
     for name in experiments:
         if name in experiments_done:

@@ -7,4 +7,4 @@ numpy==1.24.1
 pandas==1.5.2
 pathos==0.3.0
 tensorly==0.7.0
-torch==1.4.0
+torch==1.13.1

@@ -15,4 +15,4 @@ if __name__ == "__main__":
     experiment_dqn = ExperimentHighway(PATH_DQN, env_highway, N_NODES)
     experiment_dqn.run_experiments(window=100)
 
-    #nohup python -u 7_exp_high_dimensional_space.py > nohup_tlr.out&
+    #nohup python -u 5_exp_methods_comparison.py > nohup.out&

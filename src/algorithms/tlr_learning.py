@@ -171,15 +171,12 @@ class TensorLowRankLearning:
             for episode in range(self.episodes):
                 self.run_training_episode()
 
-                if episode > 0 and episode % 1000 == 0:
-                    print(episode, self.greedy_cumulative_reward[-100])
-
                 if (episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
 
                 if episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:
-                    self.greedy_cumulative_reward = [self.greedy_cumulative_reward[-1]]*self.episodes
-                    self.greedy_steps = [self.greedy_steps[-1]]*self.episodes
+                    self.greedy_cumulative_reward = [self.greedy_cumulative_reward[-1]]*(self.episodes/run_greedy_frequency)
+                    self.greedy_steps = [self.greedy_steps[-1]]*(self.episodes/run_greedy_frequency)
                     break
         else:
             for _ in range(self.episodes):

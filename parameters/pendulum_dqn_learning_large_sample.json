@@ -9,11 +9,11 @@
     "episodes": 10000,
     "max_steps": 100,
     "epsilon": 1.0,
-    "alpha": 0.001,
+    "alpha": 0.0001,
     "gamma": 0.9,
     "decay": 0.999999,
     "buffer_size": 10000,
-    "batch_size": 8,
+    "batch_size": 32,
     "arch": [100],
     "prioritized_experience": false
 }

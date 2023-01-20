@@ -199,7 +199,7 @@ class DqnLearning:
         self.mean_reward = np.mean(rewards)
         self.std_reward = np.std(rewards)
 
-    def train(self, run_greedy_frequency=None):
+    def train(self, run_greedy_frequency=1):
         if run_greedy_frequency:
             while self.episode < self.episodes:
                 self.run_training_episode()
@@ -207,12 +207,9 @@ class DqnLearning:
                     self.save_checkpoint()
                 self.write_env_metrics_train()
 
-                if self.episode > 0 and self.episode % 1000 == 0:
-                    print(self.episode, np.median(self.greedy_cumulative_reward[-100:]))
-
                 if self.episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:
-                    self.greedy_cumulative_reward = [self.greedy_cumulative_reward[-1]]*self.episodes
-                    self.greedy_steps = [self.greedy_steps[-1]]*self.episodes
+                    self.greedy_cumulative_reward = [self.greedy_cumulative_reward[-1]]*(self.episodes/run_greedy_frequency)
+                    self.greedy_steps = [self.greedy_steps[-1]]*(self.episodes/run_greedy_frequency)
                     break
 
                 if (self.episode % run_greedy_frequency) == 0:
@@ -232,5 +229,6 @@ class DqnLearning:
             self.writer.flush()
 
     def save_checkpoint(self):
-        with open(f'nn_checkpoints/dqn_learner_{os.getpid()}.pck', 'wb') as f:
-            pickle.dump(self, f)
+        pass
+        #with open(f'nn_checkpoints/dqn_learner_{os.getpid()}.pck', 'wb') as f:
+            #pickle.dump(self, f)

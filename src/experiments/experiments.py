@@ -161,17 +161,21 @@ class Experiment:
         with Pool(self.nodes) as pool:
             models = pool.map(self.run_experiment, self.models)
 
+        print('---')
+        print(len(models))
+        print([learner.mean_reward for learner in models])
+        print([len(learner.greedy_steps) for learner in models])
+
         steps = []
         max_length = self.parameters['episodes']
         for model in models:
             s = model.greedy_steps
-            s = np.pad(s, pad_width=(0, max_length - len(s)), mode='edge')
+            #s = np.pad(s, pad_width=(0, max_length - len(s)), mode='edge')
             steps.append(pd.Series(s).rolling(window).median())
 
         steps = np.median(steps, axis=0)
-        rewards = np.median([learner.mean_reward for learner in models])
-        rewards_std = np.median([learner.std_reward for learner in models])
-        data = {'steps': list(steps), 'rewards': rewards, 'std': rewards_std}
+        rewards = [learner.mean_reward for learner in models]
+        data = {'steps': list(steps), 'rewards': rewards}
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(data, f)

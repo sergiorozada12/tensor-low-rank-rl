@@ -161,16 +161,10 @@ class Experiment:
         with Pool(self.nodes) as pool:
             models = pool.map(self.run_experiment, self.models)
 
-        print('---')
-        print(len(models))
-        print([learner.mean_reward for learner in models])
-        print([len(learner.greedy_steps) for learner in models])
-
         steps = []
         max_length = self.parameters['episodes']
         for model in models:
             s = model.greedy_steps
-            #s = np.pad(s, pad_width=(0, max_length - len(s)), mode='edge')
             steps.append(pd.Series(s).rolling(window).median())
 
         steps = np.median(steps, axis=0)
@@ -303,8 +297,8 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([learner.mean_reward for learner in trained_models])
-            rewards_std = np.median([learner.std_reward for learner in trained_models])
+            rewards = np.mean([learner.mean_reward for learner in trained_models])
+            rewards_std = np.std([learner.mean_reward for learner in trained_models])
             params = trained_models[0].Q.size
 
             results['parameters'].append(params)
@@ -329,8 +323,8 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([learner.mean_reward for learner in trained_models])
-            rewards_std = np.median([learner.std_reward for learner in trained_models])
+            rewards = np.mean([learner.mean_reward for learner in trained_models])
+            rewards_std = np.std([learner.mean_reward for learner in trained_models])
             params = trained_models[0].L.size + trained_models[0].R.size
 
             results['parameters'].append(params)
@@ -355,8 +349,8 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([learner.mean_reward for learner in trained_models])
-            rewards_std = np.median([learner.std_reward for learner in trained_models])
+            rewards = np.mean([learner.mean_reward for learner in trained_models])
+            rewards_std = np.std([learner.mean_reward for learner in trained_models])
             params = sum([factor.size for factor in trained_models[0].factors])
 
             results['parameters'].append(params)
@@ -381,8 +375,8 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.median([learner.mean_reward for learner in trained_models])
-            rewards_std = np.median([learner.std_reward for learner in trained_models])
+            rewards = np.mean([learner.mean_reward for learner in trained_models])
+            rewards_std = np.std([learner.mean_reward for learner in trained_models])
             params = sum(arch)
 
             results['parameters'].append(params)

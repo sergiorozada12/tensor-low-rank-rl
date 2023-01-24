@@ -541,9 +541,8 @@ class ExperimentHighway:
             models = pool.map(self.run_experiment, self.models)
 
         rewards = np.median([pd.Series(learner.greedy_cumulative_reward).rolling(window).median() for learner in models], axis=0)
-        final_reward = np.median([learner.mean_reward for learner in models])
-        final_reward_std = np.median([learner.std_reward for learner in models])
-        data = {'rewards': list(rewards), 'final_reward': final_reward, 'final_reward_std': final_reward_std}
+        final_rewards = [learner.mean_reward for learner in models]
+        data = {'rewards': list(rewards), 'final_rewards': final_rewards}
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(data, f)

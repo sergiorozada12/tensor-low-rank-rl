@@ -28,7 +28,6 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        print(name)
         experiment = Experiment(name, env_pendulum, N_NODES)
         experiment.run_experiments(window=30)
 
@@ -38,7 +37,6 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        print(name)
         experiment = Experiment(name, env_cartpole, N_NODES)
         experiment.run_experiments(window=500)
 
@@ -48,7 +46,6 @@ if __name__ == "__main__":
     for name in experiments:
         if name in experiments_done:
             continue
-        print(name)
         experiment = Experiment(name, env_mountaincar, N_NODES)
         experiment.run_experiments(window=100)
 

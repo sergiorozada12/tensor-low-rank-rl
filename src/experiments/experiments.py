@@ -375,13 +375,11 @@ class ExperimentScale:
             with Pool(self.nodes) as pool:
                 trained_models = pool.map(self.run_experiment, models)
 
-            rewards = np.mean([learner.mean_reward for learner in trained_models])
-            rewards_std = np.std([learner.mean_reward for learner in trained_models])
+            rewards = [learner.mean_reward for learner in trained_models]
             params = sum(arch)
 
             results['parameters'].append(params)
-            results['reward'].append(rewards)
-            results['reward_std'].append(rewards_std)
+            results['rewards'].append(rewards)
 
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)

@@ -1,0 +1,18 @@
+{
+    "type": "tlr-model",
+    "min_points_states": [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
+    "max_points_states": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    "bucket_states": [50, 50, 50, 50, 50, 50, 50, 50, 50],
+    "min_points_actions": [0],
+    "max_points_actions": [4],
+    "bucket_actions": [5],
+    "discrete_action": true,
+    "episodes": 100000,
+    "max_steps": 50,
+    "epsilon": 1.0,
+    "alpha": 0.0002,
+    "gamma": 0.8,
+    "decay": 0.999999,
+    "k": 50,
+    "bias": 2.0
+}

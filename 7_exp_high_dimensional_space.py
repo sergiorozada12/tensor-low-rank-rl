@@ -18,7 +18,7 @@ PATH_DQN_SMALL = 'highway_dqn_small.json'
 
 
 if __name__ == "__main__":
-    experiment_tlr = ExperimentHighway(PATH_TLR_SMALL, env_highway, N_NODES)
+    """experiment_tlr = ExperimentHighway(PATH_TLR_SMALL, env_highway, N_NODES)
     experiment_tlr.run_experiments(window=100)
 
     experiment_tlr = ExperimentHighway(PATH_TLR_LARGE, env_highway, N_NODES)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     experiment_dqn.run_experiments(window=100)
 
     experiment_dqn = ExperimentHighway(PATH_DQN_LARGE, env_highway, N_NODES)
-    experiment_dqn.run_experiments(window=100)
+    experiment_dqn.run_experiments(window=100)"""
 
     rewards_dqn_large = json.load(open('results/highway_dqn_large.json', 'r'))
     rewards_dqn_small = json.load(open('results/highway_dqn_small.json', 'r'))
@@ -41,10 +41,10 @@ if __name__ == "__main__":
     rewards_tlr_small = pd.Series(rewards_tlr_small['rewards']).fillna(0)
 
     labels = [
-        "DQN-lear. la.",
-        "DQN-lear. sm.",
-        "TLR-lear. la",
-        "TLR-lear. sm.",
+        "DQN la.",
+        "DQN sm.",
+        "TLR $22,750$ params.",
+        "TLR $4,550$ params.",
     ]
 
     with plt.style.context(['science'], ['ieee']):

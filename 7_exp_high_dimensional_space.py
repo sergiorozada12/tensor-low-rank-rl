@@ -33,17 +33,20 @@ if __name__ == "__main__":
     rewards_dqn_large = json.load(open('results/highway_dqn_large.json', 'r'))
     rewards_dqn_small = json.load(open('results/highway_dqn_small.json', 'r'))
     rewards_tlr_large = json.load(open('results/highway_tlr_large.json', 'r'))
+    rewards_tlr_medium = json.load(open('results/highway_tlr_medium.json', 'r'))
     rewards_tlr_small = json.load(open('results/highway_tlr_small.json', 'r'))
 
     rewards_dqn_large = pd.Series(rewards_dqn_large['rewards']).fillna(0)
     rewards_dqn_small = pd.Series(rewards_dqn_small['rewards']).fillna(0)
     rewards_tlr_large = pd.Series(rewards_tlr_large['rewards']).fillna(0)
+    rewards_tlr_medium = pd.Series(rewards_tlr_medium['rewards']).fillna(0)
     rewards_tlr_small = pd.Series(rewards_tlr_small['rewards']).fillna(0)
 
     labels = [
-        "DQN la.",
-        "DQN sm.",
+        "DQN $11,605$ params. la.",
+        "DQN $11,605$ params. sm.",
         "TLR $22,750$ params.",
+        "TLR $9,100$ params.",
         "TLR $4,550$ params.",
     ]
 
@@ -56,6 +59,7 @@ if __name__ == "__main__":
         axes.plot(steps, rewards_dqn_large, color='b')
         axes.plot(steps, rewards_dqn_small, color='r')
         axes.plot(steps, rewards_tlr_large, color='orange')
+        axes.plot(steps, rewards_tlr_medium, color='g')
         axes.plot(steps, rewards_tlr_small, color='k')
         axes.set_xlabel("Episodes", labelpad=4)
         axes.set_ylabel("Return")

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from src.environments.highway import CustomHighwayEnv
 from src.experiments.experiments import ExperimentHighway
+from src.utils.utils import OOMFormatter
 
 
 env_highway = CustomHighwayEnv()
@@ -18,7 +19,7 @@ PATH_DQN_SMALL = 'highway_dqn_small.json'
 
 
 if __name__ == "__main__":
-    """experiment_tlr = ExperimentHighway(PATH_TLR_SMALL, env_highway, N_NODES)
+    experiment_tlr = ExperimentHighway(PATH_TLR_SMALL, env_highway, N_NODES)
     experiment_tlr.run_experiments(window=100)
 
     experiment_tlr = ExperimentHighway(PATH_TLR_LARGE, env_highway, N_NODES)
@@ -28,13 +29,13 @@ if __name__ == "__main__":
     experiment_dqn.run_experiments(window=100)
 
     experiment_dqn = ExperimentHighway(PATH_DQN_LARGE, env_highway, N_NODES)
-    experiment_dqn.run_experiments(window=100)"""
+    experiment_dqn.run_experiments(window=100)
 
     rewards_dqn_large = json.load(open('results/highway_dqn_large.json', 'r'))
     rewards_dqn_small = json.load(open('results/highway_dqn_small.json', 'r'))
     rewards_tlr_large = json.load(open('results/highway_tlr_large.json', 'r'))
-    rewards_tlr_medium = json.load(open('results/highway_tlr_medium_2.json', 'r'))
-    rewards_tlr_small = json.load(open('results/highway_tlr_small_2.json', 'r'))
+    rewards_tlr_medium = json.load(open('results/highway_tlr_medium.json', 'r'))
+    rewards_tlr_small = json.load(open('results/highway_tlr_small.json', 'r'))
 
     rewards_dqn_large = pd.Series(rewards_dqn_large['rewards']).fillna(0)
     rewards_dqn_small = pd.Series(rewards_dqn_small['rewards']).fillna(0)
@@ -66,8 +67,9 @@ if __name__ == "__main__":
         axes[0].set_ylabel("(a) Return")
         axes[0].set_xlim(0, 100_000)
         axes[0].set_ylim(10, 45)
-        axes[0].set_yticks([10, 20, 30, 40])
+        axes[0].set_yticks([15, 25, 35, 45])
         axes[0].set_xticks([0, 25000, 50000, 75000, 100000])
+        axes[0].yaxis.set_major_formatter(OOMFormatter(1, "%1.2f"))
         axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[0].legend(labels, fontsize=20, loc='lower right')
         axes[0].grid()
@@ -79,12 +81,13 @@ if __name__ == "__main__":
         axes[1].plot(steps, rewards_tlr_small, color='k')
         axes[1].set_xlabel("Episodes", labelpad=4)
         axes[1].set_ylabel("(b) Return")
-        axes[1].set_xlim(80_000, 100_000)
-        axes[1].set_ylim(41, 45)
-        axes[1].set_yticks([42, 43, 44, 45])
-        axes[1].set_xticks([80_000, 85_000, 90_000, 95_000, 100000])
+        axes[1].set_xlim(0, 100_000)
+        axes[1].set_ylim(42.5, 44.5)
+        axes[1].set_yticks([43.0, 43.5, 44.0, 44.5])
+        axes[1].set_xticks([0, 25000, 50000, 75000, 100000])
+        axes[1].yaxis.set_major_formatter(OOMFormatter(1, "%1.2f"))
         axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-        axes[1].legend(labels, fontsize=20, loc='lower right')
+        axes[1].legend(labels, fontsize=20, loc='upper left')
         axes[1].grid()
 
         plt.tight_layout()

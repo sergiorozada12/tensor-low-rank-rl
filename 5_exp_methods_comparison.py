@@ -166,7 +166,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]
-        axes[0].bar(labels, rewards, color='b')
+        axes[0].boxplot(labels, rewards, color='b')
         axes[0].set_ylabel("(a) Cumm. Reward")
         axes[0].set_xticklabels(labels, rotation = 90, size=12)
         axes[0].set_yticks([0, 50, 100])
@@ -181,7 +181,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]
-        axes[1].bar([l for l in labels if 'sm.' not in l], rewards, color='b')
+        axes[1].boxplot([l for l in labels if 'sm.' not in l], rewards, color='b')
         axes[1].set_ylabel("(b) Cumm. Reward")
         axes[1].set_xticklabels([l for l in labels if 'sm.' not in l], rotation = 90, size=12)
         axes[1].set_yticks([-100, 0, 100])
@@ -197,7 +197,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]
-        axes[2].bar(labels, rewards, color='b')
+        axes[2].boxplot(labels, rewards, color='b')
         axes[2].set_ylabel("(c) Cumm. Reward")
         axes[2].set_xticklabels(labels, rotation = 90, size=12)
         axes[2].set_yticks([0, 50, 100])
@@ -213,7 +213,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]
-        axes[3].bar(labels, rewards, color='b')
+        axes[3].boxplot(labels, rewards, color='b')
         axes[3].set_ylabel("(d) Cumm. Reward")
         axes[3].set_xticklabels(labels, rotation = 90, size=12)
         axes[3].set_yticks([0, 70, 140])

@@ -44,8 +44,8 @@ if __name__ == "__main__":
     rewards_tlr_small = pd.Series(rewards_tlr_small['rewards']).fillna(0)
 
     labels = [
-        "DQN $11,605$ params. la.",
-        "DQN $11,605$ params. sm.",
+        "DQN $23,210$ params. la.",
+        "DQN $23,210$ params. sm.",
         "TLR $22,750$ params.",
         "TLR $3,700$ params.",
         "TLR $1,850$ params.",

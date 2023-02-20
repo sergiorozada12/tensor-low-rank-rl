@@ -11,7 +11,7 @@
     "epsilon": 1.0,
     "alpha": 0.001,
     "gamma": 0.99,
-    "decay": 0.999999,
+    "decay": 0.9999999,
     "buffer_size": 100000,
     "batch_size": 32,
     "arch": [[100], [1000], [10000]],

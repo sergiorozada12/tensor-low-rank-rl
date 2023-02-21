@@ -7,6 +7,7 @@ nn_checkpoints/
 .vscode/
 .DS_Store/
 *.npy
+Notebooks
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

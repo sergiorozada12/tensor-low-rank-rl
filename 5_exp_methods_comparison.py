@@ -38,7 +38,7 @@ if __name__ == "__main__":
         if name in experiments_done:
             continue
         experiment = Experiment(name, env_cartpole, N_NODES)
-        experiment.run_experiments(window=500)
+        experiment.run_experiments(window=50)
 
     # Mountaincar
     experiments = [f for f in os.listdir('parameters') if 'mountaincar' in f and 'scale' not in f]
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         axes[0].set_xticks([0, 7500, 15000])
         axes[0].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
         axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-        axes[0].legend(labels, fontsize=12, loc='upper right')
+        axes[0].legend(labels, fontsize=12, loc='lower right')
         axes[0].grid()
 
         prefix = 'results/cartpole_'
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         axes[1].set_xticks([0, 20000, 40000])
         axes[1].yaxis.set_major_formatter(OOMFormatter(2, "%1.1f"))
         axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
-        axes[1].set_xlim(4000, 40000)
+        axes[1].set_xlim(0, 40000)
         axes[1].legend([l for l in labels if 'sm.' not in l], fontsize=12, loc='lower right')
         axes[1].grid()
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         axes[2].set_xlabel("Episodes", labelpad=4)
         axes[2].set_ylabel("(c) $\#$ Steps")
         axes[2].set_yticks([0, 5000, 10000])
-        axes[2].set_xticks([2500, 5000])
+        axes[2].set_xticks([0, 2500, 5000])
         axes[2].yaxis.set_major_formatter(OOMFormatter(4, "%1.1f"))
         axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[2].set_xlim(0, 5000)

@@ -227,8 +227,3 @@ class DqnLearning:
 
         if self.writer:
             self.writer.flush()
-
-    def save_checkpoint(self):
-        pass
-        #with open(f'nn_checkpoints/dqn_learner_{os.getpid()}.pck', 'wb') as f:
-            #pickle.dump(self, f)

@@ -52,7 +52,7 @@ if __name__ == "__main__":
     ]
 
     with plt.style.context(['science'], ['ieee']):
-        matplotlib.rcParams.update({'font.size': 24})
+        matplotlib.rcParams.update({'font.size': 34})
 
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(16, 7))
         axes = axes.flatten()
@@ -66,10 +66,10 @@ if __name__ == "__main__":
         axes[0].set_xlabel("Episodes", labelpad=4)
         axes[0].set_ylabel("(a) Return")
         axes[0].set_xlim(0, 100_000)
-        axes[0].set_ylim(10, 45)
-        axes[0].set_yticks([15, 25, 35, 45])
-        axes[0].set_xticks([0, 50000, 100000])
-        axes[0].yaxis.set_major_formatter(OOMFormatter(1, "%1.2f"))
+        axes[0].set_ylim(0, 45)
+        axes[0].set_yticks([0, 15, 30, 45])
+        axes[0].set_xticks([1000, 50000, 100000], [0, 50000, 100000])
+        axes[0].yaxis.set_major_formatter(OOMFormatter(1, "%1.1f"))
         axes[0].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[0].legend(labels, fontsize=20, loc='lower right')
         axes[0].grid()
@@ -82,10 +82,10 @@ if __name__ == "__main__":
         axes[1].set_xlabel("Episodes", labelpad=4)
         axes[1].set_ylabel("(b) Return")
         axes[1].set_xlim(0, 100_000)
-        axes[1].set_ylim(42.5, 44.5)
-        axes[1].set_yticks([43.0, 43.5, 44.0, 44.5])
-        axes[1].set_xticks([0, 50000, 100000])
-        axes[1].yaxis.set_major_formatter(OOMFormatter(1, "%1.2f"))
+        axes[1].set_ylim(42, 45)
+        axes[1].set_yticks([42, 43, 44, 45])
+        axes[1].set_xticks([2000, 50000, 100000], [0, 50000, 100000])
+        axes[1].yaxis.set_major_formatter(OOMFormatter(1, "%1.1f"))
         axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
         axes[1].legend(labels, fontsize=20, loc='upper left')
         axes[1].grid()

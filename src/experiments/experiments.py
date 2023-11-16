@@ -12,6 +12,7 @@ from src.models.mlp import Mlp
 
 from src.algorithms.q_learning import QLearning
 from src.algorithms.dqn_learning import DqnLearning
+from src.algorithms.svrl import Svrl
 from src.algorithms.mlr_learning import MatrixLowRankLearning
 from src.algorithms.tlr_learning import TensorLowRankLearning
 
@@ -58,6 +59,8 @@ class Experiment:
             return self._get_tlr_models()
         elif self.parameters['type'] == 'dqn-model':
             return self._get_dqn_models()
+        elif self.parameters['type'] == 'svrl-model':
+            return self._get_svrl_models()
         return None
 
     def _get_models_from_checkpoints(self):
@@ -151,6 +154,46 @@ class Experiment:
             gamma=self.parameters['gamma'],
             decay=self.parameters['decay'],
             prioritized_experience=self.parameters['prioritized_experience'],
+        ) for _ in range(self.nodes)]
+
+    def _get_svrl_models(self):
+        model_online = Mlp(
+            len(self.parameters['bucket_states']),
+            self.parameters['arch'],
+            self.discretizer.n_actions[0]
+        )
+
+        model_target = Mlp(
+            len(self.parameters['bucket_states']),
+            self.parameters['arch'],
+            self.discretizer.n_actions[0]
+        )
+
+        model_target.load_state_dict(model_online.state_dict())
+
+        if self.parameters['prioritized_experience']:
+            buffer = PrioritizedReplayBuffer(self.parameters['buffer_size'], 1.0)
+        else:
+            buffer = ReplayBuffer(self.parameters['buffer_size'])
+
+        return [Svrl(
+            env=self.env,
+            discretizer=self.discretizer,
+            model_online=model_online,
+            model_target=model_target,
+            buffer=buffer,
+            batch_size=self.parameters['batch_size'],
+            episodes=self.parameters['episodes'],
+            max_steps=self.parameters['max_steps'],
+            epsilon=self.parameters['epsilon'],
+            alpha=self.parameters['alpha'],
+            gamma=self.parameters['gamma'],
+            decay=self.parameters['decay'],
+            prioritized_experience=self.parameters['prioritized_experience'],
+            p_mask=self.parameters['p_mask'],
+            update_freq=self.parameters['update_freq'],
+            iter=self.parameters['iter'],
+            k=self.parameters['k'],
         ) for _ in range(self.nodes)]
 
     def run_experiment(self, learner):

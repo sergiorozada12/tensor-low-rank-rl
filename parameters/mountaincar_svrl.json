@@ -1,0 +1,23 @@
+{
+    "type": "dqn-model",
+    "min_points_states": [-1.2, -0.07],
+    "max_points_states": [0.6, 0.07],
+    "bucket_states": [10, 20],
+    "min_points_actions": [-1.0],
+    "max_points_actions": [1.0],
+    "bucket_actions": [10],
+    "episodes": 5000,
+    "max_steps": 10000,
+    "epsilon": 1.0,
+    "alpha": 0.001,
+    "gamma": 0.99,
+    "decay": 0.9999999,
+    "buffer_size": 100000,
+    "batch_size": 32,
+    "arch": [100],
+    "prioritized_experience": true,
+    "p_mask": 0.01,
+    "k": 2,
+    "iter": 10,
+    "update_freq": 100
+}

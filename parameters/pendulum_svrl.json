@@ -19,5 +19,5 @@
     "p_mask": 0.1,
     "k": 2,
     "iter": 20,
-    "update_freq": 1
+    "update_freq": 10
 }

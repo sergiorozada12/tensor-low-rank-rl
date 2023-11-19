@@ -83,51 +83,20 @@ class Svrl:
             return self.get_random_action()
         return self.get_greedy_action(state)
 
-    def write_training_metrics(self, loss, q):
-        if not self.writer:
-            return
-
-        if (self.iteration_idx % 10000) == 0:
-            for tag, value in self.model_online.named_parameters():
-                if value.grad is not None:
-                    self.writer.add_histogram(tag + "/grad", value.grad.cpu(), self.iteration_idx)
-                    self.writer.add_histogram(tag + "/weight", value, self.iteration_idx)
-
-        self.writer.add_scalar("Loss/train", loss, self.iteration_idx)
-        self.writer.add_histogram("Q/train", q, self.iteration_idx)
-        self.iteration_idx += 1
-
-    def write_env_metrics_train(self):
-        if not self.writer:
-            return
-
-        self.writer.add_scalar("Reward/train", self.training_cumulative_reward[-1], self.episode)
-        self.writer.add_scalar("Steps/train", self.training_steps[-1], self.episode)
-
-    def write_env_metrics_greedy(self):
-        if not self.writer:
-            return
-
-        self.writer.add_scalar("Reward/greedy", self.greedy_cumulative_reward[-1], self.episode)
-        self.writer.add_scalar("Steps/greedy", self.greedy_steps[-1], self.episode)
-
     def weighted_mse_loss(self, input, target, weight):
         weight = torch.as_tensor(weight, dtype=torch.float32)
         return torch.sum(weight*(input - target)**2)
-    
+
     def interpolate_q_target(self, q):
         q = q.detach().numpy()
-        mask = np.random.rand(*q.shape) < 0.01
-        q_sampled = q * self.p_mask
-        #print(q_sampled)
+        mask = np.random.rand(*q.shape) < self.p_mask
+        q_sampled = q * mask
         
         # Pendulum 0.1 mask iterations 20 k 2
         # Mountaincar 0.01 mask iterations 10 k 2
         mf = MF(q_sampled, K=self.k, alpha=0.1, beta=0.01, iterations=10)
-        training_process = mf.train()
-        #print(mf.full_matrix())
+        _ = mf.train()
         return torch.tensor(mf.full_matrix(), dtype=torch.float32)
-        
 
     def update_model(self):
         if len(self.buffer) <= self.batch_size:
@@ -163,8 +132,6 @@ class Svrl:
         for p1, p2 in zip(self.model_target.parameters(), self.model_online.parameters()):
             p1.data.copy_(.001*p2.data + (1 - .001)*p1.data)
 
-        self.write_training_metrics(loss, q_next)
-
         if self.prioritized_experience:
             td_error = torch.flatten(q_target - q).tolist()
             new_priorities = np.abs(td_error) + 1e-6
@@ -186,11 +153,12 @@ class Svrl:
                 state_prime = state_prime.flatten()
 
             if is_train:
+                self.iteration_idx += 1
                 state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
                 state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
                 self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
                 # pendulum = 0, mountaincar = 100
-                if step % 100 == 0 and step != 0:
+                if self.iteration_idx % self.update_freq == 0 and step != 0:
                     self.update_model()
 
             if done:
@@ -227,7 +195,6 @@ class Svrl:
         if run_greedy_frequency:
             while self.episode < self.episodes:
                 self.run_training_episode()
-                self.write_env_metrics_train()
 
                 if self.episode > int(0.1*self.episodes) and int(np.mean(self.greedy_steps[-int(0.05*self.episodes):])) == self.max_steps:
                     self.greedy_cumulative_reward = [self.greedy_cumulative_reward[-1]]*int(self.episodes/run_greedy_frequency)
@@ -236,14 +203,12 @@ class Svrl:
 
                 if (self.episode % run_greedy_frequency) == 0:
                     self.run_greedy_episode()
-                    self.write_env_metrics_greedy()
 
                 self.episode += 1
 
         else:
             for _ in range(self.episodes):
                 self.run_training_episode()
-                self.write_env_metrics(self.episode)
 
         self.evaluate_final_policy()
 

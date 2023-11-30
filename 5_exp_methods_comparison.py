@@ -22,6 +22,7 @@ N_NODES = 100
 
 
 if __name__ == "__main__":
+    """
     # Pendulum
     experiments = [f for f in os.listdir('parameters') if 'pendulum' in f and 'scale' not in f]
     experiments_done = [f for f in os.listdir('results') if 'pendulum' in f]
@@ -58,7 +59,7 @@ if __name__ == "__main__":
         print(name)
         experiment = Experiment(name, env_rocket, N_NODES)
         experiment.run_experiments(window=50)
-
+    """
     paths_pendulum = [f for f in os.listdir('results') if 'pendulum' in f]
     paths_cartpole = [f for f in os.listdir('results') if 'cartpole' in f]
     paths_mountaincar = [f for f in os.listdir('results') if 'mountaincar' in f]
@@ -69,6 +70,7 @@ if __name__ == "__main__":
         "Q-lear. high",
         "DQN-lear. sm.",
         "DQN-lear. la.",
+        "SV-RL",
         "MLR-lear.",
         "TLR-lear.",
     ]
@@ -85,6 +87,7 @@ if __name__ == "__main__":
         axes[0].plot(steps, json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
         axes[0].plot(steps, json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
         axes[0].plot(steps, json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k', )
+        axes[0].plot(steps, json.load(open(prefix + 'svrl.json', 'r'))['steps'], color='m', )
         axes[0].plot(steps, json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
         axes[0].plot(steps, json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
         axes[0].set_xlabel("Episodes", labelpad=4)
@@ -102,6 +105,7 @@ if __name__ == "__main__":
         axes[1].plot(steps, json.load(open(prefix + 'q_learning_low.json', 'r'))['steps'], color='b')
         axes[1].plot(steps, json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
         axes[1].plot(steps, json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[1].plot(steps, json.load(open(prefix + 'svrl.json', 'r'))['steps'], color='m')
         axes[1].plot(steps, json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
         axes[1].plot(steps, json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
         axes[1].set_xlabel("Episodes", labelpad=4)
@@ -120,6 +124,7 @@ if __name__ == "__main__":
         axes[2].plot(steps, json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
         axes[2].plot(steps, json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
         axes[2].plot(steps, json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[2].plot(steps, json.load(open(prefix + 'svrl.json', 'r'))['steps'], color='m')
         axes[2].plot(steps, json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
         axes[2].plot(steps, json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
         axes[2].set_xlabel("Episodes", labelpad=4)
@@ -138,6 +143,7 @@ if __name__ == "__main__":
         axes[3].plot(steps, json.load(open(prefix + 'q_learning_high.json', 'r'))['steps'], color='r')
         axes[3].plot(steps, json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['steps'], color='orange')
         axes[3].plot(steps, json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['steps'], color='k')
+        axes[3].plot(steps, json.load(open(prefix + 'svrl.json', 'r'))['steps'], color='m')
         axes[3].plot(steps, json.load(open(prefix + 'mlr_learning.json', 'r'))['steps'], color='g')
         axes[3].plot(steps, json.load(open(prefix + 'tlr_learning.json', 'r'))['steps'], color='y')
         axes[3].set_xlabel("Episodes", labelpad=4)
@@ -166,6 +172,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
             json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['rewards'],
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+            json.load(open(prefix + 'svrl.json', 'r'))['rewards'],
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]
@@ -181,6 +188,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'q_learning_low.json', 'r'))['rewards'],
             json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+            json.load(open(prefix + 'svrl.json', 'r'))['rewards'],
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]
@@ -197,6 +205,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
             json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['rewards'],
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+            json.load(open(prefix + 'svrl.json', 'r'))['rewards'],
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]
@@ -214,6 +223,7 @@ if __name__ == "__main__":
             json.load(open(prefix + 'q_learning_high.json', 'r'))['rewards'],
             json.load(open(prefix + 'dqn_learning_small_sample.json', 'r'))['rewards'],
             json.load(open(prefix + 'dqn_learning_large_sample.json', 'r'))['rewards'],
+            json.load(open(prefix + 'svrl.json', 'r'))['rewards'],
             json.load(open(prefix + 'mlr_learning.json', 'r'))['rewards'],
             json.load(open(prefix + 'tlr_learning.json', 'r'))['rewards'],
         ]

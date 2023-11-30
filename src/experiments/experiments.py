@@ -321,6 +321,46 @@ class ExperimentScale:
             prioritized_experience=self.parameters['prioritized_experience'],
         ) for _ in range(self.nodes)]
 
+    def _get_svrl_models(self, architecture):
+        model_online = Mlp(
+            len(self.parameters['bucket_states']),
+            architecture,
+            self.discretizer.n_actions[0]
+        )
+
+        model_target = Mlp(
+            len(self.parameters['bucket_states']),
+            architecture,
+            self.discretizer.n_actions[0]
+        )
+
+        model_target.load_state_dict(model_online.state_dict())
+
+        if self.parameters['prioritized_experience']:
+            buffer = PrioritizedReplayBuffer(self.parameters['buffer_size'], 1.0)
+        else:
+            buffer = ReplayBuffer(self.parameters['buffer_size'])
+
+        return [Svrl(
+            env=self.env,
+            discretizer=self.discretizer,
+            model_online=model_online,
+            model_target=model_target,
+            buffer=buffer,
+            batch_size=self.parameters['batch_size'],
+            episodes=self.parameters['episodes'],
+            max_steps=self.parameters['max_steps'],
+            epsilon=self.parameters['epsilon'],
+            alpha=self.parameters['alpha'],
+            gamma=self.parameters['gamma'],
+            decay=self.parameters['decay'],
+            prioritized_experience=self.parameters['prioritized_experience'],
+            p_mask=self.parameters['p_mask'],
+            update_freq=self.parameters['update_freq'],
+            iter=self.parameters['iter'],
+            k=self.parameters['k'],
+        ) for _ in range(self.nodes)]
+
     def run_experiment(self, learner):
         learner.train(run_greedy_frequency=self.run_freq)
         return learner
@@ -352,7 +392,6 @@ class ExperimentScale:
             json.dump(results, f)
 
     def _run_mlr_experiments(self):
-        
         results = {
             'parameters': [],
             'reward': [],
@@ -427,6 +466,30 @@ class ExperimentScale:
         with open(f'results/{self.name}', 'w') as f:
             json.dump(results, f)
 
+    def _run_svrl_experiments(self):
+
+        results = {
+            'parameters': [],
+            'reward': [],
+            'reward_std': []
+        }
+
+        self.discretizer = self._get_discretizer(self.parameters['bucket_actions'])
+        for arch in self.parameters['arch']:
+            models = self._get_svrl_models(arch)
+
+            with Pool(self.nodes) as pool:
+                trained_models = pool.map(self.run_experiment, models)
+
+            rewards = [learner.mean_reward for learner in trained_models]
+            params = sum(arch)
+
+            results['parameters'].append(params)
+            results['rewards'].append(rewards)
+
+        with open(f'results/{self.name}', 'w') as f:
+            json.dump(results, f)
+
     def run_experiments(self):
         if self.parameters['type'] == 'q-model':
             self._run_q_experiments()
@@ -436,6 +499,8 @@ class ExperimentScale:
             self._run_tlr_experiments()
         elif self.parameters['type'] == 'dqn-model':
             self._run_dqn_experiments()
+        elif self.parameters['type'] == 'svrl-model':
+            self._run_svrl_experiments()
 
 
 class ExperimentHighway:

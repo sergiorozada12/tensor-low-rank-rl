@@ -14,7 +14,7 @@
     "decay": 0.9999999,
     "buffer_size": 100000,
     "batch_size": 16,
-    "arch": [1000],
+    "arch": [[100], [1000], [10000]],
     "prioritized_experience": false,
     "p_mask": 0.1,
     "k": 4,

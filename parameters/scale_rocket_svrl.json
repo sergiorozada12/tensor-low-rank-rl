@@ -17,7 +17,7 @@
     "arch": [[100], [1000], [10000]],
     "prioritized_experience": false,
     "p_mask": 0.1,
-    "k": 4,
+    "k": 5,
     "iter": 20,
     "update_freq": 100
 }

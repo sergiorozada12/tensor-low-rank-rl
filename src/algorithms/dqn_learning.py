@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 
 import numpy as np
 import torch
@@ -225,3 +226,21 @@ class DqnLearning:
 
         if self.writer:
             self.writer.flush()
+
+    def measure_mean_runtime(self):
+        state = self.env.reset()
+        action = self.choose_action(state)
+        state_prime, reward, done, _ = self.env.step(action)
+        if len(state_prime.shape) > 1:
+            state_prime = state_prime.flatten()
+
+        for _ in range(100):
+            state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
+            state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
+            self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
+
+        start_time = time.time()
+        for _ in range(100_000):
+            self.update_model()
+        end_time = time.time()
+        return end_time - start_time

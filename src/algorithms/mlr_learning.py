@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 
 class MatrixLowRankLearning:
@@ -161,3 +162,14 @@ class MatrixLowRankLearning:
                 self.run_training_episode()
 
         self.evaluate_final_policy()
+
+    def measure_mean_runtime(self):
+        state = self.env.reset()
+        action = self.choose_action(state)
+        state_prime, reward, done, _ = self.env.step(action)
+
+        start_time = time.time()
+        for _ in range(100_000):
+            self.update_q_matrix(state, action, state_prime, reward, done)
+        end_time = time.time()
+        return end_time - start_time  

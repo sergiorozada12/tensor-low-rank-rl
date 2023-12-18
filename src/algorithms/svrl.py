@@ -1,4 +1,5 @@
 import numpy as np
+import time
 import torch
 
 from src.models.mf import MF
@@ -28,6 +29,8 @@ class Svrl:
         iter,
         writer=None,
         prioritized_experience=False,
+        alpha_mf=0.1,
+        beta_mf=0.01
     ):
 
         self.env = env
@@ -49,6 +52,8 @@ class Svrl:
         self.k = k
         self.update_freq = update_freq
         self.iter = iter
+        self.alpha_mf = alpha_mf
+        self.beta_mf = beta_mf
 
         self.training_steps = []
         self.training_cumulative_reward = []
@@ -91,10 +96,8 @@ class Svrl:
         q = q.detach().numpy()
         mask = np.random.rand(*q.shape) < self.p_mask
         q_sampled = q * mask
-        
-        # Pendulum 0.1 mask iterations 20 k 2
-        # Mountaincar 0.01 mask iterations 10 k 2
-        mf = MF(q_sampled, K=self.k, alpha=0.1, beta=0.01, iterations=10)
+
+        mf = MF(q_sampled, K=self.k, alpha=self.alpha_mf, beta=self.beta_mf, iterations=self.iter)
         _ = mf.train()
         return torch.tensor(mf.full_matrix(), dtype=torch.float32)
 
@@ -157,7 +160,7 @@ class Svrl:
                 state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
                 state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
                 self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
-                # pendulum = 0, mountaincar = 100
+
                 if self.iteration_idx % self.update_freq == 0 and step != 0:
                     self.update_model()
 
@@ -214,3 +217,21 @@ class Svrl:
 
         if self.writer:
             self.writer.flush()
+
+    def measure_mean_runtime(self):
+        state = self.env.reset()
+        action = self.choose_action(state)
+        state_prime, reward, done, _ = self.env.step(action)
+        if len(state_prime.shape) > 1:
+            state_prime = state_prime.flatten()
+
+        for _ in range(100):
+            state_tensor = torch.tensor(state, dtype=torch.float32, requires_grad=False)
+            state_prime_tensor = torch.tensor(state_prime, dtype=torch.float32, requires_grad=False)
+            self.buffer.push(state_tensor, action, state_prime_tensor, reward, done)
+
+        start_time = time.time()
+        for _ in range(100_000):
+            self.update_model()
+        end_time = time.time()
+        return end_time - start_time

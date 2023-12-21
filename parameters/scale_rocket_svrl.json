@@ -16,8 +16,10 @@
     "batch_size": 16,
     "arch": [[100], [1000], [10000]],
     "prioritized_experience": false,
-    "p_mask": 0.1,
+    "p_mask": 0.2,
     "k": 5,
-    "iter": 20,
-    "update_freq": 100
+    "iter": 10,
+    "update_freq": 100,
+    "alpha_mf": 0.1,
+    "beta_mf": 0.01
 }

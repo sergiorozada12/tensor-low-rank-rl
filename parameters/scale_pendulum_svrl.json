@@ -18,6 +18,8 @@
     "prioritized_experience": false,
     "p_mask": 0.1,
     "k": 2,
-    "iter": 20,
-    "update_freq": 10
+    "iter": 10,
+    "update_freq": 1,
+    "alpha_mf": 0.1,
+    "beta_mf": 0.01
 }

@@ -22,7 +22,7 @@ if __name__ == "__main__":
     for name in experiments:
         experiment = ExperimentComplexity(name, env_pendulum)
         experiment.run_experiments()
-    """
+
     # Cartpole
     experiments = [f for f in os.listdir('parameters') if 'cartpole' in f and 'scale' in f]
     for name in experiments:
@@ -39,4 +39,4 @@ if __name__ == "__main__":
     experiments = [f for f in os.listdir('parameters') if 'rocket' in f and 'scale' in f]
     for name in experiments:
         experiment = ExperimentComplexity(name, env_rocket)
-        experiment.run_experiments()"""
+        experiment.run_experiments()

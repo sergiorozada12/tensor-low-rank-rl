@@ -19,5 +19,7 @@
     "p_mask": 0.1,
     "k": 5,
     "iter": 20,
-    "update_freq": 100
+    "update_freq": 100,
+    "alpha_mf": 0.1,
+    "beta_mf": 0.01
 }

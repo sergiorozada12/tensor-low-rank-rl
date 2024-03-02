@@ -5,6 +5,8 @@ import time
 import numpy as np
 import torch
 
+from src.utils.utils import DiscretizerTorch, ReplayBufferTorch
+from src.models.mlp import Mlp
 
 torch.set_num_threads(1)
 
@@ -244,3 +246,84 @@ class DqnLearning:
             self.update_model()
         end_time = time.time()
         return end_time - start_time
+
+
+class DqnLearningTorch:
+    """This class is only introduced to experiment 9, as it was requested  as a follow up"""
+    def __init__(
+        self,
+        discretizer: DiscretizerTorch,
+        alpha: float,
+        gamma: float,
+        buffer_size: int,
+        batch_size: int,
+    ) -> None:
+        self.gamma = gamma
+        self.batch_size = batch_size
+
+        self.buffer = ReplayBufferTorch(buffer_size)
+        self.discretizer = discretizer
+
+        self.Q_online = Mlp(
+            len(discretizer.bucket_states),
+            [64],
+            np.prod(discretizer.bucket_actions),
+            torch.nn.Tanh,
+        ).double()
+
+        self.Q_target = Mlp(
+            len(discretizer.bucket_states),
+            [64],
+            np.prod(discretizer.bucket_actions),
+            torch.nn.Tanh,
+        ).double()
+
+        self.Q_target.load_state_dict(self.Q_online.state_dict())
+        self.opt = torch.optim.Adam(self.Q_online.parameters(), lr=alpha)
+
+    def select_random_action(self) -> np.ndarray:
+        a_idx = tuple(np.random.randint(self.discretizer.bucket_actions).tolist())
+        return self.discretizer.get_action_from_index(a_idx)
+
+    def select_greedy_action(self, s: np.ndarray) -> np.ndarray:
+        with torch.no_grad():
+            s_ten = torch.tensor(s)
+            a_idx_flat = self.Q_online(s_ten).argmax().detach().item()
+            a_idx = np.unravel_index(a_idx_flat, self.discretizer.bucket_actions)
+            return self.discretizer.get_action_from_index(a_idx)
+
+    def select_action(self, s: np.ndarray, epsilon: float) -> np.ndarray:
+        if np.random.rand() < epsilon:
+            return self.select_random_action()
+        return self.select_greedy_action(s)
+
+    def update(self) -> None:
+        s, a, sp, r = [], [], [], []
+        for _ in range(self.batch_size):
+            si, ai, spi, ri, _ = self.buffer.sample()
+
+            a_multi_idx = self.discretizer.get_action_index(ai)
+            a_idx = np.ravel_multi_index(a_multi_idx, self.discretizer.bucket_actions)
+
+            s.append(si)
+            a.append(a_idx)
+            sp.append(spi)
+            r.append(ri)
+
+        s = torch.tensor(s, requires_grad=False)
+        a = torch.tensor(a, requires_grad=False)
+        sp = torch.tensor(sp, requires_grad=False)
+        r = torch.tensor(r, requires_grad=False)
+
+        _, ap = self.Q_target(sp).max(dim=1)
+
+        q_target = r + self.gamma * self.Q_online(sp)[torch.arange(self.batch_size), ap].detach()
+        q_hat = self.Q_online(s)[torch.arange(self.batch_size), a]
+
+        self.opt.zero_grad()
+        loss = torch.nn.MSELoss()
+        loss(q_hat, q_target).backward()
+        self.opt.step()
+
+        for p1, p2 in zip(self.Q_target.parameters(), self.Q_online.parameters()):
+            p1.data.copy_(.001*p2.data + (1 - .001)*p1.data)

@@ -1,7 +1,12 @@
 import numpy as np
 import time
 import tensorly as tl
+import torch
 
+from src.utils.utils import DiscretizerTorch, ReplayBufferTorch
+from src.models.mlp import PARAFAC
+
+torch.set_num_threads(1)
 
 class TensorLowRankLearning:
     def __init__(
@@ -196,4 +201,79 @@ class TensorLowRankLearning:
         for _ in range(100_000):
             self.update_q_matrix(state, action, state_prime, reward, done)
         end_time = time.time()
-        return end_time - start_time  
+        return end_time - start_time
+
+
+class TensorLowRankLearningTorch:
+    """This class is only introduced to experiment 9, as it was requested  as a follow up"""
+    def __init__(
+        self,
+        discretizer: DiscretizerTorch,
+        alpha: float,
+        gamma: float,
+        k: int,
+        scale: float,  
+        bias: float,
+        method: int,
+    ) -> None:
+        self.alpha = alpha
+        self.gamma = gamma
+        self.method = method
+
+        self.buffer = ReplayBufferTorch(1)
+        self.discretizer = discretizer
+        self.Q = PARAFAC(
+            np.concatenate([discretizer.bucket_states, discretizer.bucket_actions]),
+            k=k,
+            scale=scale,
+            nA=len(discretizer.bucket_actions),
+            bias=bias,
+        ).double()
+        self.opt = torch.optim.Adam(self.Q.parameters(), lr=alpha)
+
+    def select_random_action(self) -> np.ndarray:
+        a_idx = tuple(np.random.randint(self.discretizer.bucket_actions).tolist())
+        return self.discretizer.get_action_from_index(a_idx)
+
+    def select_greedy_action(self, s: np.ndarray) -> np.ndarray:
+        with torch.no_grad():
+            s_idx = np.concatenate([self.discretizer.get_state_index(s)])
+            a_idx_flat = self.Q(s_idx).argmax().detach().item()
+            a_idx = np.unravel_index(a_idx_flat, self.discretizer.bucket_actions)
+            return self.discretizer.get_action_from_index(a_idx)
+
+    def select_action(self, s: np.ndarray, epsilon: float) -> np.ndarray:
+        if np.random.rand() < epsilon:
+            return self.select_random_action()
+        return self.select_greedy_action(s)
+
+    def update(self) -> None:
+        s, a, sp, r, d = self.buffer.sample()
+
+        s_idx = np.concatenate([self.discretizer.get_state_index(s)])
+        sp_idx = np.concatenate([self.discretizer.get_state_index(sp)])
+        a_idx = self.discretizer.get_action_index(a)
+
+        q_target = r + self.gamma * self.Q(sp_idx).max().detach()
+        q_hat = self.Q(np.concatenate([s_idx, a_idx]))
+
+        if self.method == 0:
+            self.opt.zero_grad()
+            loss = torch.nn.MSELoss()
+            loss(q_hat, q_target).backward()
+            self.opt.step()
+
+        elif self.method == 1:
+            for factor in self.Q.factors:
+                q_target = r + self.gamma * self.Q(sp_idx).max().detach()
+                q_hat = self.Q(np.concatenate([s_idx, a_idx]))
+
+                self.opt.zero_grad()
+                loss = torch.nn.MSELoss()
+                loss(q_hat, q_target).backward()
+
+                with torch.no_grad():
+                    for frozen_factor in self.Q.factors:
+                        if frozen_factor is not factor:
+                            frozen_factor.grad = None
+                self.opt.step()

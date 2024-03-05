@@ -50,10 +50,11 @@ with plt.style.context(['science'], ['ieee']):
     axes[1].yaxis.set_major_formatter(OOMFormatter(3, "%1.1f"))
     axes[1].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 
-    axes[2].bar(np.arange(1, len(sigma_rental) + 1), sigma_rental)
+    axes[2].bar(np.arange(1, 8), sigma_rental[:7])
     axes[2].set_xlabel("(c) SV index")
     axes[2].set_ylabel("$\sigma$")
     axes[2].set_yticks([0, 2500, 5000])
+    axes[2].set_xticks([2, 4, 6])
     axes[2].yaxis.set_major_formatter(OOMFormatter(4, "%1.1f"))
     axes[2].ticklabel_format(style = 'sci', axis='y', scilimits=(0,0))
 

@@ -5,7 +5,7 @@ Sergio Rozada,
 Santiago Paternain,
 and Antonio G. Marques
 
-This code belongs to a paper that has been submitted for publication in *IEEE Transactions on Signal Processing*.
+This code belongs to a paper that has been published in *IEEE Transactions on Signal Processing*.
 
 > The associated paper presents low-rank matrix models for function approximation value-based methods. They are easy to tune, and parametrize. They outperform neural networks in terms of size, speed of convergence and returns.
 
